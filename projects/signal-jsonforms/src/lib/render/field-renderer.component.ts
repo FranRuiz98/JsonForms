@@ -1,0 +1,123 @@
+import { NgComponentOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { FieldNode } from '../core/model';
+import { buildNodeValue } from '../core/model-builder';
+import { FieldTree } from '../adapter/signal-forms.adapter';
+import { JSON_FORMS_CONFIG } from '../registry/tokens';
+import { JSON_FORMS_RUNTIME } from './form-runtime';
+
+/**
+ * Renderiza un campo de forma recursiva, respetando el estado hidden:
+ * - control: lo envuelve en el wrapper resuelto (config.wrapper ?? defaultWrapper)
+ *   o, si no hay, instancia el componente del FieldTypeRegistry directamente.
+ * - group:   fieldset que recurre en sus hijos.
+ * - array:   itera el FieldTree del array y permite añadir/quitar items.
+ */
+@Component({
+  selector: 'jf-field-renderer',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NgComponentOutlet],
+  template: `
+    @if (!hidden()) {
+      @switch (node().kind) {
+        @case ('group') {
+          <fieldset class="jf-group">
+            @if (node().config.label) {
+              <legend>{{ node().config.label }}</legend>
+            }
+            @for (child of node().children; track child.key) {
+              <jf-field-renderer
+                [node]="child"
+                [field]="childField(child.key)"
+                [path]="path().concat(child.key)" />
+            }
+          </fieldset>
+        }
+        @case ('array') {
+          <fieldset class="jf-array">
+            @if (node().config.label) {
+              <legend>{{ node().config.label }}</legend>
+            }
+            @for (itemField of items(); track $index) {
+              <div class="jf-array-item">
+                @if (node().item; as itemNode) {
+                  <jf-field-renderer
+                    [node]="itemNode"
+                    [field]="itemField"
+                    [path]="path().concat($index)" />
+                }
+                <button type="button" class="jf-remove" (click)="removeItem($index)">Quitar</button>
+              </div>
+            }
+            <button type="button" class="jf-add" (click)="addItem()">Añadir</button>
+          </fieldset>
+        }
+        @default {
+          @if (wrapper(); as w) {
+            <ng-container [ngComponentOutlet]="w" [ngComponentOutletInputs]="wrapperInputs()" />
+          } @else if (component(); as cmp) {
+            <ng-container [ngComponentOutlet]="cmp" [ngComponentOutletInputs]="inputs()" />
+          } @else {
+            <div class="jf-unknown">Tipo de campo no registrado: "{{ node().config.type }}"</div>
+          }
+        }
+      }
+    }
+  `,
+})
+export class FieldRendererComponent {
+  private readonly registries = inject(JSON_FORMS_CONFIG);
+  private readonly runtime = inject(JSON_FORMS_RUNTIME);
+
+  readonly node = input.required<FieldNode>();
+  readonly field = input.required<FieldTree<unknown>>();
+  readonly path = input<ReadonlyArray<string | number>>([]);
+
+  /** Estado hidden del campo (reactivo); si está oculto no se renderiza. */
+  protected readonly hidden = computed(() => {
+    try {
+      return !!(this.field() as any)().hidden();
+    } catch {
+      return false;
+    }
+  });
+
+  /** Wrapper resuelto para el control (config.wrapper o defaultWrapper). */
+  protected readonly wrapper = computed(() => {
+    const key = this.node().config.wrapper ?? this.registries.defaultWrapper;
+    return key ? (this.registries.wrappers?.[key] ?? null) : null;
+  });
+
+  protected readonly wrapperInputs = computed(() => ({
+    node: this.node(),
+    field: this.field(),
+  }));
+
+  protected readonly component = computed(
+    () => this.registries.fieldTypes?.[this.node().config.type] ?? null,
+  );
+
+  protected readonly inputs = computed(() => ({
+    field: this.field(),
+    config: this.node().config,
+  }));
+
+  protected childField(key: string): FieldTree<unknown> {
+    return (this.field() as any)[key];
+  }
+
+  protected items(): FieldTree<unknown>[] {
+    return this.field() as any;
+  }
+
+  protected addItem(): void {
+    const item = this.node().item;
+    if (!item) return;
+    this.runtime.addArrayItem(this.path(), buildNodeValue(item));
+  }
+
+  protected removeItem(index: number): void {
+    this.runtime.removeArrayItem(this.path(), index);
+  }
+}

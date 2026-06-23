@@ -1,0 +1,37 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "paths": {
+      "signal-jsonforms": ["./dist/signal-jsonforms"],
+      "signal-jsonforms-material": ["./dist/signal-jsonforms-material"]
+    },
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "preserve"
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  },
+  "files": [],
+  "references": [
+    { "path": "./projects/signal-jsonforms/tsconfig.lib.json" },
+    { "path": "./projects/signal-jsonforms/tsconfig.spec.json" },
+    { "path": "./projects/signal-jsonforms-material/tsconfig.lib.json" },
+    { "path": "./projects/signal-jsonforms-material/tsconfig.spec.json" },
+    { "path": "./projects/demo/tsconfig.app.json" },
+    { "path": "./projects/demo/tsconfig.spec.json" }
+  ]
+}

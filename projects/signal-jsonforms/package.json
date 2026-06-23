@@ -1,0 +1,15 @@
+{
+  "name": "signal-jsonforms",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@angular/forms": "^21.2.0",
+    "jsep": "^1.4.0",
+    "zod": "^3.24.0 || ^4.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

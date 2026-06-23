@@ -1,0 +1,120 @@
+@use '@angular/material' as mat;
+
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (
+        theme-type: light,
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+body {
+  margin: 0;
+  background: #f5f6f8;
+  font-family: Inter, Roboto, system-ui, sans-serif;
+}
+
+.jf-field {
+  display: block;
+  width: 100%;
+}
+
+.jf-group,
+.jf-array {
+  border: 1px solid #e9ecf1;
+  border-radius: 12px;
+  padding: 0.75rem 1rem 1rem;
+  margin: 0.85rem 0;
+  background: #fafbfc;
+}
+
+.jf-group > legend,
+.jf-array > legend {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #5b6675;
+  padding: 0 0.4rem;
+}
+
+.jf-array-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-bottom: 1px dashed #e4e8ee;
+  padding: 0.6rem 0;
+}
+
+.jf-array-item > jf-field-renderer {
+  flex: 1;
+  min-width: 0;
+}
+
+.jf-add,
+.jf-remove {
+  align-self: center;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid #dde2e9;
+  border-radius: 7px;
+  background: #fff;
+  color: #5b6675;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.jf-add:hover {
+  border-color: #2563eb;
+  color: #1d4ed8;
+  background: #eef3ff;
+}
+
+.jf-add {
+  margin-top: 0.5rem;
+}
+
+.jf-remove:hover {
+  border-color: #dc2626;
+  color: #dc2626;
+  background: #fef2f3;
+}
+
+.jf-wrapper {
+  display: block;
+}
+
+.jf-description {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  color: #5b6675;
+}
+
+.jf-hint {
+  display: block;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: #9aa3b2;
+}
+
+.jf-pending {
+  display: block;
+  margin-top: -0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: #2563eb;
+}
+
+.jf-pending::before {
+  content: '⏳ ';
+}

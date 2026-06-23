@@ -1,0 +1,935 @@
+:host {
+  /* ── Design tokens ──────────────────────────────────────────────────── */
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #fafbfc;
+  --border: #e9ecf1;
+  --border-strong: #dde2e9;
+
+  --text: #0f1729;
+  --muted: #5b6675;
+  --subtle: #9aa3b2;
+
+  --accent: #2563eb;
+  --accent-ink: #1d4ed8;
+  --accent-weak: #eef3ff;
+
+  --ok: #16a34a;
+  --danger: #dc2626;
+  --danger-weak: #fef2f3;
+
+  --code-bg: #0d1426;
+  --code-fg: #e6edf6;
+  --code-muted: #6b7a90;
+  --code-accent: #93c5fd;
+
+  --r: 14px;
+  --r-sm: 10px;
+  --r-xs: 7px;
+
+  --sh-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+  --sh: 0 1px 3px rgba(16, 24, 40, 0.06), 0 8px 24px -12px rgba(16, 24, 40, 0.16);
+
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  display: block;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Barra superior ───────────────────────────────────────────────────── */
+.pg-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 56px;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.pg-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pg-logo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: linear-gradient(140deg, #2563eb, #4f46e5);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  font-weight: 500;
+  box-shadow: 0 2px 8px -2px rgba(37, 99, 235, 0.55);
+}
+
+.pg-brand-name {
+  font-weight: 600;
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
+}
+
+.pg-brand-tag {
+  padding: 0.12rem 0.5rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pg-topbar-meta {
+  font-size: 0.8rem;
+  color: var(--subtle);
+}
+
+@media (max-width: 560px) {
+  .pg-topbar-meta {
+    display: none;
+  }
+}
+
+/* ── Contenedor principal ─────────────────────────────────────────────── */
+.pg-main {
+  max-width: min(1800px, 95vw);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 4vw, 2.75rem) clamp(1rem, 3vw, 2.5rem) 5rem;
+}
+
+.pg-intro {
+  margin-bottom: 1.5rem;
+}
+
+.pg-intro h1 {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.5rem, 3vw, 1.95rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pg-intro p {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--muted);
+  font-size: 0.97rem;
+  line-height: 1.55;
+}
+
+/* ── Selector de ejemplos ─────────────────────────────────────────────── */
+.pg-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.85rem 0.45rem 0.45rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.pg-chip:hover {
+  border-color: #c2cbd8;
+  color: var(--text);
+}
+
+.pg-chip-num {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  color: var(--subtle);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  transition: inherit;
+}
+
+.pg-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px -4px rgba(37, 99, 235, 0.5);
+}
+
+.pg-chip.active .pg-chip-num {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: transparent;
+  color: #fff;
+}
+
+.pg-desc {
+  margin: 0 0 1.5rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--accent);
+  max-width: 84ch;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* ── Rejilla de tres columnas ─────────────────────────────────────────── */
+.pg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .pg-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .pg-editor-card {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 720px) {
+  .pg-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pg-editor-card {
+    grid-column: auto;
+  }
+}
+
+/* ── Tarjeta base ─────────────────────────────────────────────────────── */
+.pg-card {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  box-shadow: var(--sh-sm);
+  overflow: hidden;
+}
+
+.pg-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.pg-card-title {
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pg-card-tools {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.pg-ghost {
+  padding: 0.28rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pg-ghost:hover {
+  background: #fff;
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+/* ── Editor ───────────────────────────────────────────────────────────── */
+.pg-editor-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.pg-editor {
+  display: block;
+  width: 100%;
+  height: clamp(22rem, 52vh, 34rem);
+  box-sizing: border-box;
+  padding: 1rem 1.1rem;
+  border: 0;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  tab-size: 2;
+  resize: vertical;
+}
+
+.pg-editor:focus {
+  outline: none;
+  box-shadow: inset 0 2px 0 -1px var(--accent);
+}
+
+.pg-statusbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.6rem 1.1rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.pg-statusbar-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 0.35rem;
+  border-radius: 999px;
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+}
+
+.pg-statusbar.is-error .pg-statusbar-dot {
+  background: var(--danger);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+.pg-statusbar.is-error {
+  color: var(--danger);
+  background: var(--danger-weak);
+}
+
+.pg-statusbar-msg {
+  margin: 0;
+  font-family: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.pg-statusbar.is-error .pg-statusbar-msg {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+/* ── Vista previa del formulario ──────────────────────────────────────── */
+.pg-form-body {
+  padding: 1.25rem 1.2rem;
+}
+
+.pg-form-foot {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--border);
+}
+
+.pg-submit {
+  padding: 0.55rem 1.5rem;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.05s;
+  box-shadow: 0 4px 12px -4px rgba(37, 99, 235, 0.5);
+}
+
+.pg-submit:hover:not(:disabled) {
+  background: var(--accent-ink);
+}
+
+.pg-submit:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.pg-submit:disabled {
+  background: #e4e8ee;
+  color: #aab2bf;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.pg-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.pg-state.ok {
+  color: var(--ok);
+}
+
+.pg-state-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 18%, transparent);
+}
+
+/* ── Modelo en vivo ───────────────────────────────────────────────────── */
+.pg-model {
+  margin: 0;
+  max-height: 22rem;
+  overflow: auto;
+  padding: 1rem 1.1rem;
+  background: var(--code-bg);
+  color: var(--code-accent);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+}
+
+/* ── Botón referencia activo ──────────────────────────────────────────── */
+.pg-ghost.active {
+  background: var(--accent-weak);
+  border-color: #b8cff8;
+  color: var(--accent);
+}
+
+/* ── Panel de referencia ─────────────────────────────────────────────── */
+.pg-ref {
+  margin-top: 1.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surface);
+  box-shadow: var(--sh);
+  overflow: hidden;
+  animation: pg-ref-in 0.25s ease both;
+}
+
+@keyframes pg-ref-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pg-ref-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem 1.3rem;
+  border-bottom: 1px solid var(--border);
+  background:
+    radial-gradient(130% 150% at 0% 0%, rgba(37, 99, 235, 0.07), transparent 55%),
+    var(--surface-2);
+}
+
+.pg-ref-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.pg-ref-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(140deg, #2563eb, #4f46e5);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.92rem;
+  font-weight: 500;
+  box-shadow: 0 4px 14px -3px rgba(37, 99, 235, 0.55);
+}
+
+.pg-ref-headtext {
+  min-width: 0;
+}
+
+.pg-ref-title {
+  margin: 0.1rem 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.pg-ref-sub {
+  margin: 0;
+  max-width: 72ch;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.pg-ref-sub code {
+  font-family: var(--mono);
+  font-size: 0.82em;
+  background: #eef1f6;
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+  color: #2563eb;
+}
+
+.pg-ref-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pg-ref-close:hover {
+  background: var(--danger-weak);
+  border-color: #f3c7cb;
+  color: var(--danger);
+}
+
+/* ── Cuerpo: rail de pestañas + panel ────────────────────────────────── */
+.pg-ref-body {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+}
+
+.pg-ref-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.8rem;
+  border-right: 1px solid var(--border);
+  background: var(--surface-2);
+}
+
+.pg-ref-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pg-ref-tab:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.pg-ref-tab.active {
+  background: var(--accent-weak);
+  border-color: #cdddfb;
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.pg-ref-tab-ico {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 7px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  color: var(--subtle);
+  font-size: 0.82rem;
+}
+
+.pg-ref-tab.active .pg-ref-tab-ico {
+  background: #fff;
+  border-color: #cdddfb;
+  color: var(--accent);
+}
+
+.pg-ref-panel {
+  min-width: 0;
+  padding: 1.5rem 1.6rem;
+}
+
+.pg-ref-doc {
+  width: 100%;
+  animation: pg-ref-fade 0.2s ease both;
+}
+
+@keyframes pg-ref-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.pg-ref-h {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.pg-ref-h code {
+  font-family: var(--mono);
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.pg-ref-p {
+  margin: 0 0 0.95rem;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.pg-ref-p code {
+  font-family: var(--mono);
+  font-size: 0.82em;
+  background: #eef1f6;
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+  color: #2563eb;
+}
+
+/* ── Bloques de código en la referencia ──────────────────────────────── */
+.pg-ref-code {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  background: var(--code-bg);
+  color: var(--code-fg);
+  border-radius: var(--r-sm);
+  font-family: var(--mono);
+  font-size: 0.79rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* ── Tabla de tipos ──────────────────────────────────────────────────── */
+.pg-ref-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+
+.pg-ref-table thead tr {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.pg-ref-table th {
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--subtle);
+}
+
+.pg-ref-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--muted);
+}
+
+.pg-ref-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.pg-ref-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.pg-ref-table td:first-child {
+  white-space: nowrap;
+}
+
+.pg-ref-table code {
+  font-family: var(--mono);
+  font-size: 0.82em;
+  background: #eef1f6;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  color: #2563eb;
+}
+
+.pg-ref-req {
+  color: var(--subtle);
+  font-size: 0.8rem;
+  font-family: var(--mono);
+}
+
+.pg-ref-mono {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ── Contenido enriquecido del panel ──────────────────────────────────── */
+.pg-ref-lead {
+  margin: 0 0 1.25rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+  line-height: 1.6;
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: #eef1f6;
+    border-radius: 4px;
+    padding: 0.05em 0.35em;
+    color: #2563eb;
+  }
+
+  em {
+    font-style: italic;
+    color: var(--text);
+  }
+}
+
+.pg-ref-twocol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* ── Lista de propiedades (dl) ────────────────────────────────────────── */
+.pg-ref-props {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.pg-ref-prop {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--border);
+
+  &:first-child { padding-top: 0; }
+  &:last-child  { border-bottom: none; padding-bottom: 0; }
+
+  dt {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0 0 0.35rem;
+  }
+
+  dd {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      background: #eef1f6;
+      border-radius: 4px;
+      padding: 0.05em 0.35em;
+      color: #2563eb;
+    }
+
+    em { font-style: italic; color: var(--text); }
+  }
+}
+
+.pg-ref-prop-key {
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+  background: #eef1f6;
+  border-radius: 5px;
+  padding: 0.1em 0.45em;
+}
+
+/* ── Badges de estado ────────────────────────────────────────────────── */
+.pg-ref-badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--subtle);
+  background: var(--surface-2);
+}
+
+.pg-ref-badge--req {
+  border-color: #cdddfb;
+  color: var(--accent-ink);
+  background: var(--accent-weak);
+}
+
+/* ── Etiquetas de categoría ──────────────────────────────────────────── */
+.pg-ref-cat-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.pg-ref-cat-label--block {
+  display: block;
+  margin: 1.1rem 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+
+  &:first-child { margin-top: 0; }
+}
+
+/* ── Sub-listas dentro de dd ─────────────────────────────────────────── */
+.pg-ref-sublist {
+  margin: 0.45rem 0 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  li {
+    font-size: 0.84rem;
+    line-height: 1.5;
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      background: #eef1f6;
+      border-radius: 4px;
+      padding: 0.05em 0.35em;
+      color: #2563eb;
+    }
+  }
+}
+
+/* ── Callout informativo ─────────────────────────────────────────────── */
+.pg-ref-callout {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-weak);
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  font-size: 0.84rem;
+  line-height: 1.6;
+  color: var(--muted);
+
+  strong { color: var(--accent-ink); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: rgba(37, 99, 235, 0.12);
+    border-radius: 4px;
+    padding: 0.05em 0.35em;
+    color: var(--accent-ink);
+  }
+}
+
+/* ── Variante compacta de tabla ──────────────────────────────────────── */
+.pg-ref-table--compact {
+  td, th { padding: 0.4rem 0.6rem; }
+}
+
+/* ── Columna DSL (tablas apiladas) ───────────────────────────────────── */
+.pg-ref-dsl-tables {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .pg-ref-twocol {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .pg-ref-body {
+    grid-template-columns: 1fr;
+  }
+
+  .pg-ref-tabs {
+    flex-direction: row;
+    gap: 0.4rem;
+    overflow-x: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pg-ref-tab {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .pg-ref-panel {
+    padding: 1.25rem 1.2rem;
+  }
+}
