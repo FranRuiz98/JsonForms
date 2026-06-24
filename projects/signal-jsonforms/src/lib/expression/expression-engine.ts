@@ -1,8 +1,8 @@
 import jsep from 'jsep';
 
 /**
- * Contexto seguro expuesto al DSL. `value` es el valor del campo actual y `model`
- * el modelo (típicamente un proxy reactivo que lee otros campos vía valueOf).
+ * Safe context exposed to the DSL. `value` is the current field value and `model`
+ * is the model (typically a reactive proxy that reads other fields via valueOf).
  */
 export interface ExprContext {
   value: unknown;
@@ -11,9 +11,9 @@ export interface ExprContext {
 export type CompiledExpr = (ctx: ExprContext) => unknown;
 
 /**
- * Compila una expresión del DSL a una función pura. Parseo con jsep (AST) y
- * evaluación con un intérprete acotado: SIN eval/Function y sin llamadas a
- * funciones; solo lectura de `value`/`model`, operadores y literales.
+ * Compiles a DSL expression to a pure function. Parsed with jsep (AST) and
+ * evaluated with a sandboxed interpreter: NO eval/Function and no function calls;
+ * only reads `value`/`model`, operators, and literals.
  */
 export function compileExpression(expr: string): CompiledExpr {
   const ast = jsep(expr) as unknown as Node;
@@ -43,7 +43,7 @@ function evalNode(node: Node, ctx: ExprContext): any {
         case '+':
           return +(a as number);
         default:
-          throw new Error(`DSL: operador unario no soportado "${node['operator']}".`);
+          throw new Error(`DSL: unsupported unary operator "${node['operator']}".`);
       }
     }
     case 'BinaryExpression':
@@ -60,9 +60,9 @@ function evalNode(node: Node, ctx: ExprContext): any {
     case 'ArrayExpression':
       return (node['elements'] as Node[]).map((e) => evalNode(e, ctx));
     case 'Compound':
-      throw new Error('DSL: la expresión debe ser única (sin ";").');
+      throw new Error('DSL: expression must be a single expression (no ";").');
     default:
-      throw new Error(`DSL: nodo no soportado "${node['type']}".`);
+      throw new Error(`DSL: unsupported node type "${node['type']}".`);
   }
 }
 
@@ -81,7 +81,7 @@ function resolveIdentifier(name: string, ctx: ExprContext): any {
     case 'undefined':
       return undefined;
     default:
-      throw new Error(`DSL: identificador no permitido "${name}" (usa value o model).`);
+      throw new Error(`DSL: identifier not allowed "${name}" (use value or model).`);
   }
 }
 
@@ -116,6 +116,6 @@ function binop(op: string, l: any, r: any): any {
     case '%':
       return l % r;
     default:
-      throw new Error(`DSL: operador no soportado "${op}".`);
+      throw new Error(`DSL: unsupported operator "${op}".`);
   }
 }

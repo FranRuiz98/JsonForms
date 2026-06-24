@@ -5,12 +5,12 @@ import { FieldTree } from '../adapter/signal-forms.adapter';
 import { JSON_FORMS_CONFIG } from '../registry/tokens';
 
 /**
- * Wrapper por defecto (agnóstico de UI). Instancia el control del FieldTypeRegistry
- * y añade el andamiaje transversal: descripción, hint y el indicador de estado
- * "Comprobando…" cuando hay validación async en curso (pending).
+ * Default wrapper (UI-agnostic). Instantiates the control from the FieldTypeRegistry
+ * and adds cross-cutting scaffolding: description, hint, and the "Checking…" status
+ * indicator when async validation is in progress (pending).
  *
- * Material gestiona su propio label/errores dentro del control; el wrapper solo
- * compone alrededor, así que no duplica esa chrome.
+ * Material manages its own label/errors inside the control; the wrapper only
+ * composes around it, so it does not duplicate that chrome.
  */
 @Component({
   selector: 'jf-field-wrapper',
@@ -25,10 +25,10 @@ import { JSON_FORMS_CONFIG } from '../registry/tokens';
       @if (control(); as cmp) {
         <ng-container [ngComponentOutlet]="cmp" [ngComponentOutletInputs]="controlInputs()" />
       } @else {
-        <div class="jf-unknown">Tipo de campo no registrado: "{{ node().config.type }}"</div>
+        <div class="jf-unknown">Unregistered field type: "{{ node().config.type }}"</div>
       }
       @if (pending()) {
-        <small class="jf-pending">Comprobando…</small>
+        <small class="jf-pending">Checking…</small>
       } @else if (hint()) {
         <small class="jf-hint">{{ hint() }}</small>
       }
@@ -50,7 +50,7 @@ export class JfFieldWrapperComponent {
     config: this.node().config,
   }));
 
-  /** true mientras una validación async del campo está en curso. */
+  /** true while an async field validation is in progress. */
   protected readonly pending = computed(() => {
     try {
       return !!(this.field() as any)().pending();

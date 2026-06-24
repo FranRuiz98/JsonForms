@@ -6,16 +6,16 @@ import { createMockApi, makeControlNode, makeGroupNode, makeArrayNode, mockRoot,
 // ── resolvePath ───────────────────────────────────────────────────────────
 
 describe('resolvePath', () => {
-  it('devuelve el root cuando keys está vacío', () => {
+  it('returns root when keys is empty', () => {
     const root = { a: 1 };
     expect(resolvePath(root, [])).toBe(root);
   });
 
-  it('resuelve un path de un nivel', () => {
+  it('resolves a single-level path', () => {
     expect(resolvePath({ a: 42 }, ['a'])).toBe(42);
   });
 
-  it('resuelve un path anidado', () => {
+  it('resolves a nested path', () => {
     expect(resolvePath({ a: { b: { c: 7 } } }, ['a', 'b', 'c'])).toBe(7);
   });
 });
@@ -23,73 +23,73 @@ describe('resolvePath', () => {
 // ── compileSchema ─────────────────────────────────────────────────────────
 
 describe('compileSchema', () => {
-  it('devuelve una función', () => {
+  it('returns a function', () => {
     expect(typeof compileSchema([], createMockApi() as any)).toBe('function');
   });
 
-  it('no lanza con lista de nodos vacía', () => {
+  it('does not throw with empty node list', () => {
     const api = createMockApi();
     expect(() => compileSchema([], api as any)({})).not.toThrow();
   });
 
-  describe('validadores estándar', () => {
-    it('llama api.required para kind "required"', () => {
+  describe('standard validators', () => {
+    it('calls api.required for kind "required"', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'name', path: ['name'], validators: [{ kind: 'required' }] })];
       compileSchema(nodes, api as any)(mockRoot(['name']));
       expect(api.required).toHaveBeenCalledWith('path_name', undefined);
     });
 
-    it('pasa el message a required', () => {
+    it('passes the message to required', () => {
       const api = createMockApi();
-      const nodes = [makeControlNode({ key: 'name', path: ['name'], validators: [{ kind: 'required', message: 'Obligatorio' }] })];
+      const nodes = [makeControlNode({ key: 'name', path: ['name'], validators: [{ kind: 'required', message: 'Required' }] })];
       compileSchema(nodes, api as any)(mockRoot(['name']));
-      expect(api.required).toHaveBeenCalledWith('path_name', { message: 'Obligatorio' });
+      expect(api.required).toHaveBeenCalledWith('path_name', { message: 'Required' });
     });
 
-    it('llama api.email para kind "email"', () => {
+    it('calls api.email for kind "email"', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'email', path: ['email'], validators: [{ kind: 'email' }] })];
       compileSchema(nodes, api as any)(mockRoot(['email']));
       expect(api.email).toHaveBeenCalledWith('path_email', undefined);
     });
 
-    it('llama api.min con valor numérico', () => {
+    it('calls api.min with numeric value', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'n', path: ['n'], validators: [{ kind: 'min', value: 5 }] })];
       compileSchema(nodes, api as any)(mockRoot(['n']));
       expect(api.min).toHaveBeenCalledWith('path_n', 5, undefined);
     });
 
-    it('llama api.max con valor numérico', () => {
+    it('calls api.max with numeric value', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'n', path: ['n'], validators: [{ kind: 'max', value: 100 }] })];
       compileSchema(nodes, api as any)(mockRoot(['n']));
       expect(api.max).toHaveBeenCalledWith('path_n', 100, undefined);
     });
 
-    it('llama api.minLength con valor numérico', () => {
+    it('calls api.minLength with numeric value', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'txt', path: ['txt'], validators: [{ kind: 'minLength', value: 3 }] })];
       compileSchema(nodes, api as any)(mockRoot(['txt']));
       expect(api.minLength).toHaveBeenCalledWith('path_txt', 3, undefined);
     });
 
-    it('llama api.maxLength con valor numérico', () => {
+    it('calls api.maxLength with numeric value', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'txt', path: ['txt'], validators: [{ kind: 'maxLength', value: 50 }] })];
       compileSchema(nodes, api as any)(mockRoot(['txt']));
       expect(api.maxLength).toHaveBeenCalledWith('path_txt', 50, undefined);
     });
 
-    it('llama api.pattern con RegExp construida desde string', () => {
+    it('calls api.pattern with RegExp built from string', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'code', path: ['code'], validators: [{ kind: 'pattern', value: '^[A-Z]+$' }] })];
       compileSchema(nodes, api as any)(mockRoot(['code']));
       expect(api.pattern).toHaveBeenCalledWith('path_code', /^[A-Z]+$/, undefined);
     });
 
-    it('llama api.pattern con RegExp si el value ya es RegExp', () => {
+    it('calls api.pattern with RegExp if value is already a RegExp', () => {
       const api = createMockApi();
       const re = /^\d+$/;
       const nodes = [makeControlNode({ key: 'code', path: ['code'], validators: [{ kind: 'pattern', value: re }] })];
@@ -97,7 +97,7 @@ describe('compileSchema', () => {
       expect(api.pattern).toHaveBeenCalledWith('path_code', re, undefined);
     });
 
-    it('aplica múltiples validadores en orden', () => {
+    it('applies multiple validators in order', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({
         key: 'f', path: ['f'],
@@ -110,15 +110,15 @@ describe('compileSchema', () => {
     });
   });
 
-  describe('validador expr', () => {
-    it('llama api.validate para kind "expr"', () => {
+  describe('expr validator', () => {
+    it('calls api.validate for kind "expr"', () => {
       const api = createMockApi();
       const nodes = [makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'expr', expr: 'value !== ""' }] })];
       compileSchema(nodes, api as any)(mockRoot(['f']));
       expect(api.validate).toHaveBeenCalled();
     });
 
-    it('el callback devuelve undefined cuando la expresión es truthy', () => {
+    it('callback returns undefined when expression is truthy', () => {
       const api = createMockApi();
       let captured: ((fc: any) => any) | undefined;
       (api.validate as ReturnType<typeof vi.fn>).mockImplementation((_p: any, cb: any) => { captured = cb; });
@@ -126,21 +126,21 @@ describe('compileSchema', () => {
       const nodes = [makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'expr', expr: 'value !== ""' }] })];
       compileSchema(nodes, api as any)(mockRoot(['f']));
 
-      expect(captured!(mockFc('hola'))).toBeUndefined();
+      expect(captured!(mockFc('hello'))).toBeUndefined();
     });
 
-    it('el callback devuelve error cuando la expresión es falsy', () => {
+    it('callback returns error when expression is falsy', () => {
       const api = createMockApi();
       let captured: ((fc: any) => any) | undefined;
       (api.validate as ReturnType<typeof vi.fn>).mockImplementation((_p: any, cb: any) => { captured = cb; });
 
-      const nodes = [makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'expr', expr: 'value !== ""', message: 'Requerido' }] })];
+      const nodes = [makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'expr', expr: 'value !== ""', message: 'Required' }] })];
       compileSchema(nodes, api as any)(mockRoot(['f']));
 
-      expect(captured!(mockFc(''))).toEqual({ kind: 'expr', message: 'Requerido' });
+      expect(captured!(mockFc(''))).toEqual({ kind: 'expr', message: 'Required' });
     });
 
-    it('usa mensaje por defecto cuando no hay message', () => {
+    it('uses default message when no message is provided', () => {
       const api = createMockApi();
       let captured: ((fc: any) => any) | undefined;
       (api.validate as ReturnType<typeof vi.fn>).mockImplementation((_p: any, cb: any) => { captured = cb; });
@@ -154,8 +154,8 @@ describe('compileSchema', () => {
     });
   });
 
-  describe('validador fn', () => {
-    it('llama api.validate para kind "fn"', () => {
+  describe('fn validator', () => {
+    it('calls api.validate for kind "fn"', () => {
       const api = createMockApi();
       const mockFn = vi.fn().mockReturnValue(undefined);
       const nodes = [makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'fn', fn: 'myVal' }] })];
@@ -163,15 +163,15 @@ describe('compileSchema', () => {
       expect(api.validate).toHaveBeenCalled();
     });
 
-    it('lanza si el fn no está registrado', () => {
+    it('throws if the fn is not registered', () => {
       const api = createMockApi();
-      const nodes = [makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'fn', fn: 'noExiste' }] })];
-      expect(() => compileSchema(nodes, api as any)(mockRoot(['f']))).toThrow(/no registrado/);
+      const nodes = [makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'fn', fn: 'notExists' }] })];
+      expect(() => compileSchema(nodes, api as any)(mockRoot(['f']))).toThrow(/not registered/);
     });
   });
 
-  describe('reglas condicionales', () => {
-    it('llama api.hidden para hidden con expr', () => {
+  describe('conditional rules', () => {
+    it('calls api.hidden for hidden with expr', () => {
       const api = createMockApi();
       const node = makeControlNode({
         key: 'f', path: ['f'],
@@ -181,7 +181,7 @@ describe('compileSchema', () => {
       expect(api.hidden).toHaveBeenCalled();
     });
 
-    it('llama api.disabled para disabled con expr', () => {
+    it('calls api.disabled for disabled with expr', () => {
       const api = createMockApi();
       const node = makeControlNode({
         key: 'f', path: ['f'],
@@ -191,7 +191,7 @@ describe('compileSchema', () => {
       expect(api.disabled).toHaveBeenCalled();
     });
 
-    it('llama api.readonly para readonly con fn', () => {
+    it('calls api.readonly for readonly with fn', () => {
       const api = createMockApi();
       const mockFn = vi.fn().mockReturnValue(false);
       const node = makeControlNode({
@@ -202,16 +202,16 @@ describe('compileSchema', () => {
       expect(api.readonly).toHaveBeenCalled();
     });
 
-    it('lanza si la función condicional no está registrada', () => {
+    it('throws if the conditional function is not registered', () => {
       const api = createMockApi();
       const node = makeControlNode({
         key: 'f', path: ['f'],
         config: { key: 'f', type: 'text', hidden: { fn: 'missingFn' } },
       });
-      expect(() => compileSchema([node], api as any)(mockRoot(['f']))).toThrow(/no registrada/);
+      expect(() => compileSchema([node], api as any)(mockRoot(['f']))).toThrow(/not registered/);
     });
 
-    it('no llama api.hidden si no hay regla hidden', () => {
+    it('does not call api.hidden if there is no hidden rule', () => {
       const api = createMockApi();
       const node = makeControlNode({ key: 'f', path: ['f'] });
       compileSchema([node], api as any)(mockRoot(['f']));
@@ -219,8 +219,8 @@ describe('compileSchema', () => {
     });
   });
 
-  describe('estructura grupo', () => {
-    it('recursa en los hijos del grupo', () => {
+  describe('group structure', () => {
+    it('recurses into group children', () => {
       const api = createMockApi();
       const child = makeControlNode({
         key: 'street',
@@ -234,8 +234,8 @@ describe('compileSchema', () => {
     });
   });
 
-  describe('estructura array', () => {
-    it('llama api.applyEach para nodos array', () => {
+  describe('array structure', () => {
+    it('calls api.applyEach for array nodes', () => {
       const api = createMockApi();
       const item = makeControlNode({ key: 'val', path: ['val'] });
       const node = makeArrayNode('tags', item);
@@ -245,7 +245,7 @@ describe('compileSchema', () => {
   });
 
   describe('async validators', () => {
-    it('llama api.validateAsync con la definición registrada', () => {
+    it('calls api.validateAsync with the registered definition', () => {
       const api = createMockApi();
       const mockDef = { params: vi.fn(), factory: vi.fn(), onSuccess: vi.fn(), onError: vi.fn() };
       const nodes = [makeControlNode({ key: 'f', path: ['f'], asyncValidators: [{ kind: 'uniqueEmail' }] })];
@@ -253,7 +253,7 @@ describe('compileSchema', () => {
       expect(api.validateAsync).toHaveBeenCalled();
     });
 
-    it('llama api.debounce cuando asyncValidator tiene debounce', () => {
+    it('calls api.debounce when asyncValidator has debounce', () => {
       const api = createMockApi();
       const mockDef = { params: vi.fn(), factory: vi.fn(), onSuccess: vi.fn(), onError: vi.fn() };
       const nodes = [makeControlNode({ key: 'f', path: ['f'], asyncValidators: [{ kind: 'uniqueEmail', debounce: 300 }] })];
@@ -261,10 +261,10 @@ describe('compileSchema', () => {
       expect(api.debounce).toHaveBeenCalledWith('path_f', 300);
     });
 
-    it('lanza si el validador async no está registrado', () => {
+    it('throws if the async validator is not registered', () => {
       const api = createMockApi();
-      const nodes = [makeControlNode({ key: 'f', path: ['f'], asyncValidators: [{ kind: 'noExiste' }] })];
-      expect(() => compileSchema(nodes, api as any)(mockRoot(['f']))).toThrow(/no registrado/);
+      const nodes = [makeControlNode({ key: 'f', path: ['f'], asyncValidators: [{ kind: 'notExists' }] })];
+      expect(() => compileSchema(nodes, api as any)(mockRoot(['f']))).toThrow(/not registered/);
     });
   });
 });

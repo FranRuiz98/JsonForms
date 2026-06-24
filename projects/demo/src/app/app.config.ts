@@ -10,12 +10,12 @@ import { MATERIAL_FIELD_TYPES } from 'signal-jsonforms-material';
 
 const TAKEN_USERNAMES = ['admin', 'root', 'test'];
 
-/** Validador síncrono registrado (kind 'fn'): exige una contraseña razonable. */
+/** Registered synchronous validator (kind 'fn'): enforces a reasonable password. */
 function passwordStrength(ctx: DynamicContext): ValidationResult {
   const value = String(ctx.value() ?? '');
-  if (value.length < 8) return { kind: 'weak', message: 'Mínimo 8 caracteres' };
+  if (value.length < 8) return { kind: 'weak', message: 'Minimum 8 characters' };
   if (!/[0-9]/.test(value) || !/[a-zA-Z]/.test(value)) {
-    return { kind: 'weak', message: 'Combina letras y números' };
+    return { kind: 'weak', message: 'Combine letters and numbers' };
   }
   return undefined;
 }
@@ -26,18 +26,18 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     provideJsonForms({
       fieldTypes: MATERIAL_FIELD_TYPES,
-      // Wrapper por defecto: añade description/hint y el indicador "Comprobando…".
+      // Default wrapper: adds description/hint and the "Checking…" indicator.
       wrappers: { default: JfFieldWrapperComponent },
       defaultWrapper: 'default',
-      // Lógica condicional compleja referenciada por clave.
+      // Complex conditional logic referenced by key.
       functions: {
         hideForNonPro: (ctx: DynamicContext) => ctx.valueAt('plan') !== 'pro',
       },
-      // Validadores síncronos registrados (kind 'fn').
+      // Registered synchronous validators (kind 'fn').
       validators: {
         passwordStrength,
       },
-      // Validadores async (siempre por registro): no son serializables en JSON.
+      // Async validators (always via registry): not serializable in JSON.
       asyncValidators: {
         uniqueUsername: {
           params: ({ value }) => value(),
@@ -50,8 +50,8 @@ export const appConfig: ApplicationConfig = {
               },
             }),
           onSuccess: (taken) =>
-            taken ? { kind: 'taken', message: 'Ese usuario ya existe' } : undefined,
-          onError: () => ({ kind: 'error', message: 'No se pudo validar el usuario' }),
+            taken ? { kind: 'taken', message: 'That username is already taken' } : undefined,
+          onError: () => ({ kind: 'error', message: 'Could not validate the username' }),
         },
       },
     }),

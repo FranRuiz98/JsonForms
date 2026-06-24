@@ -87,7 +87,7 @@ describe('updateIn', () => {
     });
   });
 
-  describe('array mutation use-cases (modelo de arrays del formulario)', () => {
+  describe('array mutation use-cases (form array model)', () => {
     it('appends an item to an array', () => {
       const model = { tags: ['a', 'b'] };
       const result = updateIn(model, ['tags'], (arr) => [...(arr as string[]), 'c']);

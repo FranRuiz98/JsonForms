@@ -3,8 +3,8 @@ import { FieldConfig } from '../core/model';
 import { FieldTree } from '../adapter/signal-forms.adapter';
 
 /**
- * Contrato que implementa cada componente de campo registrado.
- * `field()` devuelve el nodo FieldTree (para [formField]); `field()()` su FieldState.
+ * Contract implemented by every registered field component.
+ * `field()` returns the FieldTree node (for [formField]); `field()()` its FieldState.
  */
 export interface FieldComponent {
   field: InputSignal<FieldTree<unknown>>;

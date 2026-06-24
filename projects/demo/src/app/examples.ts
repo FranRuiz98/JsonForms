@@ -1,17 +1,17 @@
 import { FormConfig } from 'signal-jsonforms';
 
 /**
- * Galería de ejemplos del playground. Cada uno sube un escalón de complejidad
- * para enseñar, de forma incremental, hasta dónde llega la librería:
- *   1) campos y validadores básicos
- *   2) batería completa de validadores estándar
- *   3) lógica dinámica: visibilidad condicional + validación cross-field (DSL)
- *   4) estructura: grupos anidados + arrays repetibles con valores por defecto
- *   5) avanzado: validación async + funciones/validadores registrados (kind 'fn')
+ * Example gallery for the playground. Each one increases complexity
+ * to incrementally show how far the library can go:
+ *   1) basic fields and validators
+ *   2) full suite of standard validators
+ *   3) dynamic logic: conditional visibility + cross-field validation (DSL)
+ *   4) structure: nested groups + repeatable arrays with default values
+ *   5) advanced: async validation + registered functions/validators (kind 'fn')
  *
- * Los niveles 1–4 son 100% autónomos en JSON (no dependen del registro). El nivel
- * 5 referencia helpers declarados en `app.config.ts` (uniqueUsername, hideForNonPro,
- * passwordStrength) para mostrar el modelo híbrido JSON + registro.
+ * Levels 1–4 are 100% self-contained in JSON (do not depend on the registry). Level
+ * 5 references helpers declared in `app.config.ts` (uniqueUsername, hideForNonPro,
+ * passwordStrength) to show the hybrid JSON + registry model.
  */
 export interface PlaygroundExample {
   id: string;
@@ -23,47 +23,47 @@ export interface PlaygroundExample {
 
 export const EXAMPLES: PlaygroundExample[] = [
   // ─────────────────────────────────────────────────────────────────────────
-  // Nivel 1 · Básico
+  // Level 1 · Basic
   // ─────────────────────────────────────────────────────────────────────────
   {
-    id: 'contacto',
+    id: 'contact',
     level: 1,
-    title: 'Contacto',
+    title: 'Contact',
     description:
-      'Lo mínimo imprescindible: campos de texto, un desplegable con valor por defecto y validadores básicos (required, email, minLength).',
+      'The bare minimum: text fields, a dropdown with a default value, and basic validators (required, email, minLength).',
     config: {
       version: '1',
-      id: 'contacto',
+      id: 'contact',
       fields: [
         {
           key: 'name',
           type: 'text',
           dataType: 'string',
-          label: 'Nombre',
+          label: 'Name',
           validators: [{ kind: 'required' }],
         },
         {
           key: 'email',
           type: 'text',
           dataType: 'string',
-          label: 'Correo electrónico',
-          props: { placeholder: 'tu@correo.com' },
+          label: 'Email address',
+          props: { placeholder: 'you@example.com' },
           validators: [
             { kind: 'required' },
-            { kind: 'email', message: 'Correo no válido' },
+            { kind: 'email', message: 'Invalid email' },
           ],
         },
         {
           key: 'subject',
           type: 'select',
           dataType: 'string',
-          label: 'Asunto',
+          label: 'Subject',
           defaultValue: 'support',
           props: {
             options: [
-              { value: 'support', label: 'Soporte' },
-              { value: 'sales', label: 'Ventas' },
-              { value: 'other', label: 'Otro' },
+              { value: 'support', label: 'Support' },
+              { value: 'sales', label: 'Sales' },
+              { value: 'other', label: 'Other' },
             ],
           },
         },
@@ -71,11 +71,11 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'message',
           type: 'text',
           dataType: 'string',
-          label: 'Mensaje',
-          props: { hint: 'Cuéntanos en qué podemos ayudarte' },
+          label: 'Message',
+          props: { hint: 'Tell us how we can help you' },
           validators: [
             { kind: 'required' },
-            { kind: 'minLength', value: 10, message: 'Mínimo 10 caracteres' },
+            { kind: 'minLength', value: 10, message: 'Minimum 10 characters' },
           ],
         },
       ],
@@ -83,32 +83,32 @@ export const EXAMPLES: PlaygroundExample[] = [
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Nivel 2 · Validadores estándar
+  // Level 2 · Standard validators
   // ─────────────────────────────────────────────────────────────────────────
   {
-    id: 'cuenta',
+    id: 'account',
     level: 2,
-    title: 'Crear cuenta',
+    title: 'Create account',
     description:
-      'Toda la batería de validadores estándar serializables: minLength/maxLength, pattern (regex), min/max sobre números y required sobre un checkbox.',
+      'The full suite of serializable standard validators: minLength/maxLength, pattern (regex), min/max on numbers, and required on a checkbox.',
     config: {
       version: '1',
-      id: 'cuenta',
+      id: 'account',
       fields: [
         {
           key: 'username',
           type: 'text',
           dataType: 'string',
-          label: 'Nombre de usuario',
-          props: { hint: 'Letras, números y guion bajo' },
+          label: 'Username',
+          props: { hint: 'Letters, numbers, and underscores' },
           validators: [
             { kind: 'required' },
-            { kind: 'minLength', value: 3, message: 'Mínimo 3 caracteres' },
-            { kind: 'maxLength', value: 20, message: 'Máximo 20 caracteres' },
+            { kind: 'minLength', value: 3, message: 'Minimum 3 characters' },
+            { kind: 'maxLength', value: 20, message: 'Maximum 20 characters' },
             {
               kind: 'pattern',
               value: '^[a-zA-Z0-9_]+$',
-              message: 'Solo letras, números y guion bajo',
+              message: 'Letters, numbers, and underscores only',
             },
           ],
         },
@@ -116,44 +116,44 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'email',
           type: 'text',
           dataType: 'string',
-          label: 'Correo electrónico',
+          label: 'Email address',
           validators: [{ kind: 'required' }, { kind: 'email' }],
         },
         {
           key: 'password',
           type: 'text',
           dataType: 'string',
-          label: 'Contraseña',
-          props: { hint: 'Al menos 8 caracteres' },
+          label: 'Password',
+          props: { hint: 'At least 8 characters' },
           validators: [
             { kind: 'required' },
-            { kind: 'minLength', value: 8, message: 'Mínimo 8 caracteres' },
+            { kind: 'minLength', value: 8, message: 'Minimum 8 characters' },
           ],
         },
         {
           key: 'age',
           type: 'number',
           dataType: 'number',
-          label: 'Edad',
-          props: { description: 'Necesitas ser mayor de edad.' },
+          label: 'Age',
+          props: { description: 'You must be of legal age.' },
           validators: [
             { kind: 'required' },
-            { kind: 'min', value: 18, message: 'Debes ser mayor de edad' },
-            { kind: 'max', value: 120, message: 'Edad no válida' },
+            { kind: 'min', value: 18, message: 'You must be of legal age' },
+            { kind: 'max', value: 120, message: 'Invalid age' },
           ],
         },
         {
           key: 'country',
           type: 'select',
           dataType: 'string',
-          label: 'País',
+          label: 'Country',
           validators: [{ kind: 'required' }],
           props: {
             options: [
-              { value: 'es', label: 'España' },
-              { value: 'mx', label: 'México' },
-              { value: 'ar', label: 'Argentina' },
-              { value: 'co', label: 'Colombia' },
+              { value: 'us', label: 'United States' },
+              { value: 'uk', label: 'United Kingdom' },
+              { value: 'ca', label: 'Canada' },
+              { value: 'au', label: 'Australia' },
             ],
           },
         },
@@ -161,53 +161,53 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'terms',
           type: 'checkbox',
           dataType: 'boolean',
-          label: 'Acepto los términos y condiciones',
-          validators: [{ kind: 'required', message: 'Debes aceptar los términos' }],
+          label: 'I accept the terms and conditions',
+          validators: [{ kind: 'required', message: 'You must accept the terms' }],
         },
       ],
     },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Nivel 3 · Lógica dinámica (DSL de expresiones)
+  // Level 3 · Dynamic logic (expression DSL)
   // ─────────────────────────────────────────────────────────────────────────
   {
-    id: 'dinamico',
+    id: 'dynamic',
     level: 3,
-    title: 'Lógica dinámica',
+    title: 'Dynamic logic',
     description:
-      'Visibilidad condicional y validación cross-field expresadas en el propio JSON con el DSL de expresiones. Cambia el "tipo de cuenta" o marca la suscripción y observa cómo aparecen y se exigen campos nuevos.',
+      'Conditional visibility and cross-field validation expressed directly in JSON with the expression DSL. Change the "account type" or check the subscription and watch new fields appear and become required.',
     config: {
       version: '1',
-      id: 'dinamico',
+      id: 'dynamic',
       fields: [
         {
           key: 'accountType',
           type: 'select',
           dataType: 'string',
-          label: 'Tipo de cuenta',
+          label: 'Account type',
           defaultValue: 'personal',
           props: {
             options: [
               { value: 'personal', label: 'Personal' },
-              { value: 'business', label: 'Empresa' },
+              { value: 'business', label: 'Business' },
             ],
           },
           validators: [{ kind: 'required' }],
         },
         {
-          // hidden vía DSL: solo visible para cuentas de empresa.
+          // hidden via DSL: only visible for business accounts.
           key: 'company',
           type: 'text',
           dataType: 'string',
-          label: 'Razón social',
+          label: 'Company name',
           hidden: { expr: "model.accountType !== 'business'" },
-          // required "condicional" vía expr: solo exige valor cuando es empresa.
+          // "conditional" required via expr: only requires a value for business accounts.
           validators: [
             {
               kind: 'expr',
               expr: "model.accountType !== 'business' || !!value",
-              message: 'Indica la razón social',
+              message: 'Please enter the company name',
             },
           ],
         },
@@ -215,28 +215,28 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'vatId',
           type: 'text',
           dataType: 'string',
-          label: 'CIF / NIF',
+          label: 'VAT / Tax ID',
           hidden: { expr: "model.accountType !== 'business'" },
         },
         {
           key: 'email',
           type: 'text',
           dataType: 'string',
-          label: 'Correo electrónico',
+          label: 'Email address',
           validators: [{ kind: 'required' }, { kind: 'email' }],
         },
         {
-          // cross-field vía DSL: debe coincidir con el correo de arriba.
+          // cross-field via DSL: must match the email above.
           key: 'emailConfirm',
           type: 'text',
           dataType: 'string',
-          label: 'Repite el correo',
+          label: 'Confirm email',
           validators: [
             { kind: 'required' },
             {
               kind: 'expr',
               expr: 'value === model.email',
-              message: 'Los correos no coinciden',
+              message: 'Emails do not match',
             },
           ],
         },
@@ -244,22 +244,22 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'subscribe',
           type: 'checkbox',
           dataType: 'boolean',
-          label: 'Quiero recibir la newsletter',
+          label: 'I want to receive the newsletter',
         },
         {
-          // disabled vía DSL: el campo se habilita al marcar la suscripción.
+          // disabled via DSL: the field is enabled when subscription is checked.
           key: 'frequency',
           type: 'select',
           dataType: 'string',
-          label: 'Frecuencia de envío',
+          label: 'Sending frequency',
           disabled: { expr: '!model.subscribe' },
           defaultValue: 'weekly',
           props: {
-            hint: 'Marca la suscripción para elegir la frecuencia',
+            hint: 'Check the subscription to choose the frequency',
             options: [
-              { value: 'daily', label: 'Diaria' },
-              { value: 'weekly', label: 'Semanal' },
-              { value: 'monthly', label: 'Mensual' },
+              { value: 'daily', label: 'Daily' },
+              { value: 'weekly', label: 'Weekly' },
+              { value: 'monthly', label: 'Monthly' },
             ],
           },
         },
@@ -268,35 +268,35 @@ export const EXAMPLES: PlaygroundExample[] = [
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Nivel 4 · Estructura (grupos + arrays)
+  // Level 4 · Structure (groups + arrays)
   // ─────────────────────────────────────────────────────────────────────────
   {
-    id: 'pedido',
+    id: 'order',
     level: 4,
-    title: 'Pedido',
+    title: 'Order',
     description:
-      'Composición de datos: grupos anidados (cliente, dirección de envío) y un array repetible de líneas de pedido con valores por defecto. Usa "Añadir" / "Quitar" para gestionar las líneas.',
+      'Data composition: nested groups (customer, shipping address) and a repeatable array of order lines with default values. Use "Add" / "Remove" to manage the lines.',
     config: {
       version: '1',
-      id: 'pedido',
+      id: 'order',
       fields: [
         {
           key: 'customer',
           type: 'group',
-          label: 'Cliente',
+          label: 'Customer',
           fields: [
             {
               key: 'name',
               type: 'text',
               dataType: 'string',
-              label: 'Nombre completo',
+              label: 'Full name',
               validators: [{ kind: 'required' }],
             },
             {
               key: 'email',
               type: 'text',
               dataType: 'string',
-              label: 'Correo',
+              label: 'Email',
               validators: [{ kind: 'required' }, { kind: 'email' }],
             },
           ],
@@ -304,30 +304,30 @@ export const EXAMPLES: PlaygroundExample[] = [
         {
           key: 'shipping',
           type: 'group',
-          label: 'Dirección de envío',
+          label: 'Shipping address',
           fields: [
             {
               key: 'street',
               type: 'text',
               dataType: 'string',
-              label: 'Calle y número',
+              label: 'Street and number',
               validators: [{ kind: 'required' }],
             },
             {
               key: 'city',
               type: 'text',
               dataType: 'string',
-              label: 'Ciudad',
+              label: 'City',
               validators: [{ kind: 'required' }],
             },
             {
               key: 'zip',
               type: 'text',
               dataType: 'string',
-              label: 'Código postal',
+              label: 'Postal code',
               validators: [
                 { kind: 'required' },
-                { kind: 'pattern', value: '^[0-9]{4,5}$', message: 'Código postal no válido' },
+                { kind: 'pattern', value: '^[0-9]{4,5}$', message: 'Invalid postal code' },
               ],
             },
           ],
@@ -335,7 +335,7 @@ export const EXAMPLES: PlaygroundExample[] = [
         {
           key: 'items',
           type: 'array',
-          label: 'Líneas del pedido',
+          label: 'Order lines',
           item: {
             key: 'line',
             type: 'group',
@@ -344,13 +344,13 @@ export const EXAMPLES: PlaygroundExample[] = [
                 key: 'product',
                 type: 'select',
                 dataType: 'string',
-                label: 'Producto',
+                label: 'Product',
                 validators: [{ kind: 'required' }],
                 props: {
                   options: [
-                    { value: 'book', label: 'Libro' },
-                    { value: 'pen', label: 'Bolígrafo' },
-                    { value: 'mug', label: 'Taza' },
+                    { value: 'book', label: 'Book' },
+                    { value: 'pen', label: 'Pen' },
+                    { value: 'mug', label: 'Mug' },
                   ],
                 },
               },
@@ -358,18 +358,18 @@ export const EXAMPLES: PlaygroundExample[] = [
                 key: 'qty',
                 type: 'number',
                 dataType: 'number',
-                label: 'Cantidad',
+                label: 'Quantity',
                 defaultValue: 1,
                 validators: [
                   { kind: 'required' },
-                  { kind: 'min', value: 1, message: 'Mínimo 1 unidad' },
+                  { kind: 'min', value: 1, message: 'Minimum 1 unit' },
                 ],
               },
               {
                 key: 'notes',
                 type: 'text',
                 dataType: 'string',
-                label: 'Notas',
+                label: 'Notes',
               },
             ],
           },
@@ -378,33 +378,33 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'giftWrap',
           type: 'checkbox',
           dataType: 'boolean',
-          label: 'Envolver para regalo',
+          label: 'Gift wrap',
         },
       ],
     },
   },
 
   // ─────────────────────────────────────────────────────────────────────────
-  // Nivel 5 · Avanzado (async + registro)
+  // Level 5 · Advanced (async + registry)
   // ─────────────────────────────────────────────────────────────────────────
   {
-    id: 'registro',
+    id: 'registration',
     level: 5,
-    title: 'Registro completo',
+    title: 'Full registration',
     description:
-      'El escaparate completo combinando todo: validación async por registro (el usuario "admin", "root" o "test" está ocupado — se comprueba al salir del campo), un validador síncrono registrado (fuerza de la contraseña, kind "fn"), visibilidad por función registrada, cross-field, grupos y arrays. Los helpers viven en app.config.ts.',
+      'The full showcase combining everything: async validation via registry (the usernames "admin", "root", and "test" are taken — checked on field blur), a registered synchronous validator (password strength, kind "fn"), visibility via registered function, cross-field, groups, and arrays. The helpers live in app.config.ts.',
     config: {
       version: '1',
-      id: 'registro-usuario',
+      id: 'user-registration',
       fields: [
         {
           key: 'username',
           type: 'text',
           dataType: 'string',
-          label: 'Usuario',
+          label: 'Username',
           props: {
-            placeholder: 'prueba con "admin"',
-            hint: 'Se comprueba contra el servidor al salir del campo',
+            placeholder: 'try "admin"',
+            hint: 'Checked against the server on field blur',
           },
           validators: [{ kind: 'required' }],
           asyncValidators: [{ kind: 'uniqueUsername', debounce: 400 }],
@@ -413,40 +413,40 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'password',
           type: 'text',
           dataType: 'string',
-          label: 'Contraseña',
-          props: { hint: 'Mínimo 8 caracteres, combinando letras y números' },
+          label: 'Password',
+          props: { hint: 'Minimum 8 characters, mixing letters and numbers' },
           validators: [{ kind: 'required' }, { kind: 'fn', fn: 'passwordStrength' }],
         },
         {
           key: 'email',
           type: 'text',
           dataType: 'string',
-          label: 'Correo',
-          props: { placeholder: 'tu@correo.com' },
+          label: 'Email',
+          props: { placeholder: 'you@example.com' },
           validators: [
-            { kind: 'required', message: 'El correo es obligatorio' },
-            { kind: 'email', message: 'Correo no válido' },
+            { kind: 'required', message: 'Email is required' },
+            { kind: 'email', message: 'Invalid email' },
           ],
         },
         {
           key: 'emailConfirm',
           type: 'text',
           dataType: 'string',
-          label: 'Repite el correo',
+          label: 'Confirm email',
           validators: [
             { kind: 'required' },
-            { kind: 'expr', expr: 'value === model.email', message: 'Los correos no coinciden' },
+            { kind: 'expr', expr: 'value === model.email', message: 'Emails do not match' },
           ],
         },
         {
           key: 'age',
           type: 'number',
           dataType: 'number',
-          label: 'Edad',
-          props: { description: 'Debes ser mayor de edad para registrarte.' },
+          label: 'Age',
+          props: { description: 'You must be of legal age to register.' },
           validators: [
             { kind: 'required' },
-            { kind: 'min', value: 18, message: 'Debes ser mayor de edad' },
+            { kind: 'min', value: 18, message: 'You must be of legal age' },
           ],
         },
         {
@@ -457,38 +457,38 @@ export const EXAMPLES: PlaygroundExample[] = [
           validators: [{ kind: 'required' }],
           props: {
             options: [
-              { value: 'free', label: 'Gratis' },
+              { value: 'free', label: 'Free' },
               { value: 'pro', label: 'Pro' },
             ],
           },
         },
         {
-          // visibilidad por función registrada: visible solo si plan = 'pro'.
+          // visibility via registered function: visible only if plan = 'pro'.
           key: 'company',
           type: 'text',
           dataType: 'string',
-          label: 'Empresa (solo Pro)',
+          label: 'Company (Pro only)',
           hidden: { fn: 'hideForNonPro' },
         },
         {
           key: 'address',
           type: 'group',
-          label: 'Dirección',
+          label: 'Address',
           fields: [
             {
               key: 'street',
               type: 'text',
               dataType: 'string',
-              label: 'Calle',
+              label: 'Street',
               validators: [{ kind: 'required' }],
             },
-            { key: 'city', type: 'text', dataType: 'string', label: 'Ciudad' },
+            { key: 'city', type: 'text', dataType: 'string', label: 'City' },
           ],
         },
         {
           key: 'contacts',
           type: 'array',
-          label: 'Contactos',
+          label: 'Contacts',
           item: {
             key: 'contact',
             type: 'group',
@@ -497,18 +497,18 @@ export const EXAMPLES: PlaygroundExample[] = [
                 key: 'name',
                 type: 'text',
                 dataType: 'string',
-                label: 'Nombre',
+                label: 'Name',
                 validators: [{ kind: 'required' }],
               },
               {
                 key: 'relation',
                 type: 'select',
                 dataType: 'string',
-                label: 'Relación',
+                label: 'Relation',
                 props: {
                   options: [
-                    { value: 'family', label: 'Familia' },
-                    { value: 'work', label: 'Trabajo' },
+                    { value: 'family', label: 'Family' },
+                    { value: 'work', label: 'Work' },
                   ],
                 },
               },
@@ -519,7 +519,7 @@ export const EXAMPLES: PlaygroundExample[] = [
           key: 'newsletter',
           type: 'checkbox',
           dataType: 'boolean',
-          label: 'Quiero recibir novedades',
+          label: 'I want to receive news and updates',
         },
       ],
     },

@@ -8,186 +8,186 @@ const run = (expr: string, value: unknown, model: unknown = {}) =>
 // ── compileExpression ─────────────────────────────────────────────────────
 
 describe('compileExpression', () => {
-  describe('literales', () => {
-    it('evalúa número entero', () => {
+  describe('literals', () => {
+    it('evaluates integer number', () => {
       expect(run('42', null)).toBe(42);
     });
 
-    it('evalúa número decimal', () => {
+    it('evaluates decimal number', () => {
       expect(run('3.14', null)).toBeCloseTo(3.14);
     });
 
-    it('evalúa string con comillas dobles', () => {
-      expect(run('"hola"', null)).toBe('hola');
+    it('evaluates string with double quotes', () => {
+      expect(run('"hello"', null)).toBe('hello');
     });
 
-    it('evalúa string con comillas simples', () => {
-      expect(run("'mundo'", null)).toBe('mundo');
+    it('evaluates string with single quotes', () => {
+      expect(run("'world'", null)).toBe('world');
     });
 
-    it('evalúa true como boolean', () => {
+    it('evaluates true as boolean', () => {
       expect(run('true', null)).toBe(true);
     });
 
-    it('evalúa false como boolean', () => {
+    it('evaluates false as boolean', () => {
       expect(run('false', null)).toBe(false);
     });
 
-    it('evalúa null', () => {
+    it('evaluates null', () => {
       expect(run('null', null)).toBeNull();
     });
 
-    it('evalúa undefined', () => {
+    it('evaluates undefined', () => {
       expect(run('undefined', null)).toBeUndefined();
     });
   });
 
-  describe('identificadores permitidos', () => {
-    it('devuelve el valor del contexto con "value"', () => {
+  describe('allowed identifiers', () => {
+    it('returns the context value with "value"', () => {
       expect(run('value', 'test')).toBe('test');
     });
 
-    it('devuelve el modelo con "model"', () => {
+    it('returns the model with "model"', () => {
       const model = { x: 1 };
       expect(compileExpression('model')(ctx(null, model))).toBe(model);
     });
 
-    it('lanza para identificador no permitido (window)', () => {
-      expect(() => run('window', null)).toThrow(/no permitido/);
+    it('throws for disallowed identifier (window)', () => {
+      expect(() => run('window', null)).toThrow(/not allowed/);
     });
 
-    it('lanza para identificador no permitido (eval)', () => {
-      expect(() => run('eval', null)).toThrow(/no permitido/);
+    it('throws for disallowed identifier (eval)', () => {
+      expect(() => run('eval', null)).toThrow(/not allowed/);
     });
 
-    it('lanza para identificador no permitido (document)', () => {
-      expect(() => run('document', null)).toThrow(/no permitido/);
+    it('throws for disallowed identifier (document)', () => {
+      expect(() => run('document', null)).toThrow(/not allowed/);
     });
 
-    it('lanza para identificador no permitido (process)', () => {
-      expect(() => run('process', null)).toThrow(/no permitido/);
+    it('throws for disallowed identifier (process)', () => {
+      expect(() => run('process', null)).toThrow(/not allowed/);
     });
   });
 
-  describe('MemberExpression (acceso a propiedades)', () => {
-    it('lee model.campo', () => {
+  describe('MemberExpression (property access)', () => {
+    it('reads model.field', () => {
       expect(run('model.name', null, { name: 'Alice' })).toBe('Alice');
     });
 
-    it('lee model.a.b anidado', () => {
+    it('reads nested model.a.b', () => {
       expect(run('model.address.city', null, { address: { city: 'Madrid' } })).toBe('Madrid');
     });
 
-    it('devuelve undefined para acceso en null', () => {
+    it('returns undefined for access on null', () => {
       expect(run('model.x.y', null, { x: null })).toBeUndefined();
     });
 
-    it('devuelve undefined cuando el campo no existe', () => {
+    it('returns undefined when field does not exist', () => {
       expect(run('model.missing', null, {})).toBeUndefined();
     });
 
-    it('soporta acceso con corchetes (computed)', () => {
+    it('supports bracket access (computed)', () => {
       expect(run('model["name"]', null, { name: 'Bob' })).toBe('Bob');
     });
   });
 
-  describe('operadores unarios', () => {
-    it('! niega un boolean', () => {
+  describe('unary operators', () => {
+    it('! negates a boolean', () => {
       expect(run('!value', true)).toBe(false);
       expect(run('!value', false)).toBe(true);
     });
 
-    it('! en valor falsy', () => {
+    it('! on falsy value', () => {
       expect(run('!value', 0)).toBe(true);
       expect(run('!value', '')).toBe(true);
     });
 
-    it('- negación numérica', () => {
+    it('- numeric negation', () => {
       expect(run('-value', 5)).toBe(-5);
     });
 
-    it('+ coerción a número', () => {
+    it('+ coercion to number', () => {
       expect(run('+value', '7')).toBe(7);
     });
 
-    it('lanza para operador unario no soportado', () => {
-      expect(() => run('~value', 5)).toThrow(/operador unario no soportado/);
+    it('throws for unsupported unary operator', () => {
+      expect(() => run('~value', 5)).toThrow(/unsupported unary operator/);
     });
   });
 
-  describe('operadores binarios - comparación', () => {
-    it('=== igualdad estricta (true)', () => {
+  describe('binary operators - comparison', () => {
+    it('=== strict equality (true)', () => {
       expect(run('value === "admin"', 'admin')).toBe(true);
     });
 
-    it('=== igualdad estricta (false)', () => {
+    it('=== strict equality (false)', () => {
       expect(run('value === "admin"', 'user')).toBe(false);
     });
 
-    it('!== desigualdad estricta', () => {
+    it('!== strict inequality', () => {
       expect(run('value !== "admin"', 'user')).toBe(true);
     });
 
-    it('== igualdad débil (number/string)', () => {
+    it('== loose equality (number/string)', () => {
       expect(run('value == 1', '1')).toBe(true);
     });
 
-    it('!= desigualdad débil', () => {
-      expect(run('value != 0', '')).toBe(false); // '' == 0 es true
+    it('!= loose inequality', () => {
+      expect(run('value != 0', '')).toBe(false); // '' == 0 is true
     });
 
-    it('< menor que', () => {
+    it('< less than', () => {
       expect(run('value < 10', 5)).toBe(true);
       expect(run('value < 10', 15)).toBe(false);
     });
 
-    it('> mayor que', () => {
+    it('> greater than', () => {
       expect(run('value > 5', 10)).toBe(true);
       expect(run('value > 5', 3)).toBe(false);
     });
 
-    it('<= menor o igual', () => {
+    it('<= less than or equal', () => {
       expect(run('value <= 10', 10)).toBe(true);
       expect(run('value <= 10', 11)).toBe(false);
     });
 
-    it('>= mayor o igual', () => {
+    it('>= greater than or equal', () => {
       expect(run('value >= 5', 5)).toBe(true);
       expect(run('value >= 5', 4)).toBe(false);
     });
 
-    it('lanza para operador no soportado', () => {
-      expect(() => run('value ** 2', 3)).toThrow(/operador no soportado/);
+    it('throws for unsupported operator', () => {
+      expect(() => run('value ** 2', 3)).toThrow(/unsupported operator/);
     });
   });
 
-  describe('operadores binarios - aritmética', () => {
-    it('suma +', () => {
+  describe('binary operators - arithmetic', () => {
+    it('addition +', () => {
       expect(run('value + 3', 7)).toBe(10);
     });
 
-    it('resta -', () => {
+    it('subtraction -', () => {
       expect(run('value - 3', 7)).toBe(4);
     });
 
-    it('multiplicación *', () => {
+    it('multiplication *', () => {
       expect(run('value * 2', 5)).toBe(10);
     });
 
-    it('división /', () => {
+    it('division /', () => {
       expect(run('value / 2', 10)).toBe(5);
     });
 
-    it('módulo %', () => {
+    it('modulo %', () => {
       expect(run('value % 3', 7)).toBe(1);
     });
 
-    it('concatenación de strings con +', () => {
-      expect(run('value + " mundo"', 'hola')).toBe('hola mundo');
+    it('string concatenation with +', () => {
+      expect(run('value + " world"', 'hello')).toBe('hello world');
     });
   });
 
-  describe('operadores lógicos', () => {
+  describe('logical operators', () => {
     it('&& true && true = true', () => {
       expect(run('value && true', true)).toBe(true);
     });
@@ -196,8 +196,8 @@ describe('compileExpression', () => {
       expect(run('value && true', false)).toBe(false);
     });
 
-    it('&& short-circuit devuelve el lado izquierdo si falsy', () => {
-      expect(run('value && "texto"', 0)).toBe(0);
+    it('&& short-circuit returns left side if falsy', () => {
+      expect(run('value && "text"', 0)).toBe(0);
     });
 
     it('|| false || true = true', () => {
@@ -208,79 +208,79 @@ describe('compileExpression', () => {
       expect(run('value || false', true)).toBe(true);
     });
 
-    it('|| devuelve el lado derecho si el izquierdo es falsy', () => {
+    it('|| returns right side if left is falsy', () => {
       expect(run('value || "default"', '')).toBe('default');
     });
   });
 
-  describe('expresión condicional (ternaria)', () => {
-    it('devuelve el consecuente si la condición es truthy', () => {
-      expect(run('value ? "sí" : "no"', true)).toBe('sí');
+  describe('conditional expression (ternary)', () => {
+    it('returns consequent if condition is truthy', () => {
+      expect(run('value ? "yes" : "no"', true)).toBe('yes');
     });
 
-    it('devuelve el alternativo si la condición es falsy', () => {
-      expect(run('value ? "sí" : "no"', false)).toBe('no');
+    it('returns alternate if condition is falsy', () => {
+      expect(run('value ? "yes" : "no"', false)).toBe('no');
     });
 
-    it('condición basada en comparación', () => {
-      expect(run('value > 18 ? "adulto" : "menor"', 25)).toBe('adulto');
-      expect(run('value > 18 ? "adulto" : "menor"', 15)).toBe('menor');
+    it('condition based on comparison', () => {
+      expect(run('value > 18 ? "adult" : "minor"', 25)).toBe('adult');
+      expect(run('value > 18 ? "adult" : "minor"', 15)).toBe('minor');
     });
   });
 
-  describe('expresiones de array', () => {
-    it('crea array de literales', () => {
+  describe('array expressions', () => {
+    it('creates array of literals', () => {
       expect(run('[1, 2, 3]', null)).toEqual([1, 2, 3]);
     });
 
-    it('incluye valores dinámicos', () => {
+    it('includes dynamic values', () => {
       expect(run('[value, 0]', 5)).toEqual([5, 0]);
     });
 
-    it('array vacío', () => {
+    it('empty array', () => {
       expect(run('[]', null)).toEqual([]);
     });
   });
 
-  describe('expresiones compuestas (inválidas)', () => {
-    it('lanza para expresiones con punto y coma', () => {
-      expect(() => run('1; 2', null)).toThrow(/única/);
+  describe('compound expressions (invalid)', () => {
+    it('throws for expressions with semicolon', () => {
+      expect(() => run('1; 2', null)).toThrow(/single expression/);
     });
   });
 
-  describe('casos de uso reales del DSL', () => {
-    it('hidden cuando value es string vacío', () => {
+  describe('real DSL use cases', () => {
+    it('hidden when value is empty string', () => {
       const fn = compileExpression('value === ""');
       expect(fn(ctx(''))).toBe(true);
-      expect(fn(ctx('algo'))).toBe(false);
+      expect(fn(ctx('something'))).toBe(false);
     });
 
-    it('disabled cuando model.role no es admin', () => {
+    it('disabled when model.role is not admin', () => {
       const fn = compileExpression('model.role !== "admin"');
       expect(fn(ctx(null, { role: 'user' }))).toBe(true);
       expect(fn(ctx(null, { role: 'admin' }))).toBe(false);
     });
 
-    it('validación cross-field: edad >= 18 Y país ES', () => {
+    it('cross-field validation: age >= 18 AND country ES', () => {
       const fn = compileExpression('value >= 18 && model.country === "ES"');
       expect(fn(ctx(18, { country: 'ES' }))).toBe(true);
       expect(fn(ctx(17, { country: 'ES' }))).toBe(false);
       expect(fn(ctx(18, { country: 'FR' }))).toBe(false);
     });
 
-    it('campo requerido solo si otro campo tiene valor', () => {
+    it('field required only if another field has a value', () => {
       const fn = compileExpression('model.tipo !== "" ? value !== "" : true');
       expect(fn(ctx('', { tipo: '' }))).toBe(true);
-      expect(fn(ctx('', { tipo: 'empresa' }))).toBe(false);
-      expect(fn(ctx('MiEmpresa', { tipo: 'empresa' }))).toBe(true);
+      expect(fn(ctx('', { tipo: 'company' }))).toBe(false);
+      expect(fn(ctx('MyCompany', { tipo: 'company' }))).toBe(true);
     });
 
-    it('expresión con negación doble (!!) para coerción booleana', () => {
+    it('expression with double negation (!!) for boolean coercion', () => {
       const fn = compileExpression('!!value');
       expect(fn(ctx(0))).toBe(false);
       expect(fn(ctx(1))).toBe(true);
       expect(fn(ctx(''))).toBe(false);
-      expect(fn(ctx('hola'))).toBe(true);
+      expect(fn(ctx('hello'))).toBe(true);
     });
   });
 });

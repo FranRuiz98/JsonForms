@@ -4,10 +4,10 @@ import { FieldComponent } from '../render/field-component.interface';
 export type ValidationResult = { kind: string; message?: string } | undefined;
 
 /**
- * Contexto reactivo que reciben las funciones registradas (condiciones y
- * validadores custom). Todo se lee como getter para mantener el tracking de
- * Signal Forms: `value()` el campo actual, `model()` el modelo completo,
- * `valueAt('a.b')` un campo concreto por path con puntos.
+ * Reactive context received by registered functions (conditions and
+ * custom validators). Everything is read as a getter to maintain Signal Forms
+ * tracking: `value()` is the current field, `model()` the full model,
+ * `valueAt('a.b')` a specific field by dot-separated path.
  */
 export interface DynamicContext {
   value: () => unknown;
@@ -15,22 +15,22 @@ export interface DynamicContext {
   valueAt: (path: string) => unknown;
 }
 
-/** Validador síncrono custom (kind 'fn'): devuelve error o undefined. */
+/** Custom synchronous validator (kind 'fn'): returns an error or undefined. */
 export type SyncValidatorFn = (ctx: DynamicContext) => ValidationResult;
 
-/** Función de lógica (condiciones hidden/disabled/readonly con kind 'fn'). */
+/** Logic function (hidden/disabled/readonly conditions with kind 'fn'). */
 export type LogicFn = (ctx: DynamicContext) => unknown;
 
 /**
- * Definición de un validador async (params/factory/onSuccess/onError de validateAsync).
- * `factory` recibe un Signal con el valor de `params` y debe devolver un resource()
- * cuyo `params` sea ese mismo Signal (NO envolverlo en otra función).
+ * Definition of an async validator (params/factory/onSuccess/onError for validateAsync).
+ * `factory` receives a Signal with the value of `params` and must return a resource()
+ * whose `params` is that same Signal (do NOT wrap it in another function).
  */
 export interface AsyncValidatorDef {
   params: (ctx: { value: () => unknown }) => unknown;
   factory: (input: Signal<unknown>) => unknown;
   onSuccess: (result: unknown) => ValidationResult;
-  onError: (err: unknown) => ValidationResult; // OBLIGATORIO en validateAsync
+  onError: (err: unknown) => ValidationResult; // REQUIRED by validateAsync
 }
 
 export type FieldTypeRegistry = Record<string, Type<FieldComponent>>;
@@ -39,13 +39,13 @@ export type ValidatorRegistry = Record<string, SyncValidatorFn>;
 export type AsyncValidatorRegistry = Record<string, AsyncValidatorDef>;
 export type FunctionRegistry = Record<string, LogicFn>;
 
-/** Config global que el consumidor pasa a provideJsonForms(). */
+/** Global config passed by the consumer to provideJsonForms(). */
 export interface JsonFormsConfig {
   fieldTypes?: FieldTypeRegistry;
   wrappers?: WrapperRegistry;
-  defaultWrapper?: string;               // wrapper aplicado a los controles si no indican uno
-  validators?: ValidatorRegistry;       // kind 'fn' en validators[]
+  defaultWrapper?: string;               // wrapper applied to controls that do not specify one
+  validators?: ValidatorRegistry;       // kind 'fn' in validators[]
   asyncValidators?: AsyncValidatorRegistry;
-  functions?: FunctionRegistry;          // hidden/disabled/readonly con { fn }
+  functions?: FunctionRegistry;          // hidden/disabled/readonly with { fn }
   messages?: Record<string, string>;
 }

@@ -22,9 +22,9 @@ import { FieldRendererComponent } from './field-renderer.component';
 import { JSON_FORMS_RUNTIME, JsonFormsRuntime } from './form-runtime';
 
 /**
- * Punto de entrada declarativo: <jf-form [schema]="json" [(model)]="data">.
- * Construye el form de Signal Forms y delega el render en FieldRenderer.
- * Provee JSON_FORMS_RUNTIME para que los renderers muten el modelo (arrays).
+ * Declarative entry point: <jf-form [schema]="json" [(model)]="data">.
+ * Builds the Signal Forms form and delegates rendering to FieldRenderer.
+ * Provides JSON_FORMS_RUNTIME so renderers can mutate the model (arrays).
  */
 @Component({
   selector: 'jf-form',
@@ -50,11 +50,11 @@ export class FormHostComponent implements OnInit, JsonFormsRuntime {
   readonly schema = input.required<FormConfig>();
   readonly model = model<Record<string, unknown>>({});
 
-  /** FieldTree raíz (null hasta construirse en ngOnInit). */
+  /** Root FieldTree (null until built in ngOnInit). */
   readonly form = signal<FieldTree<unknown> | null>(null);
   readonly nodes = signal<FieldNode[]>([]);
 
-  /** Estado de validez del formulario completo (true mientras no exista). */
+  /** Validity state of the entire form (true while not yet built). */
   readonly invalid = computed(() => {
     const f = this.form();
     return f ? (f as any)().invalid() : true;
@@ -74,7 +74,7 @@ export class FormHostComponent implements OnInit, JsonFormsRuntime {
     return resolvePath(root, node.path);
   }
 
-  // --- JsonFormsRuntime: mutación inmutable del modelo para arrays ---
+  // --- JsonFormsRuntime: immutable model mutation for arrays ---
   addArrayItem(path: ReadonlyArray<string | number>, item: unknown): void {
     this.model.update((m) => updateIn(m, path, (arr) => [...((arr as unknown[]) ?? []), item]));
   }
@@ -85,7 +85,7 @@ export class FormHostComponent implements OnInit, JsonFormsRuntime {
     );
   }
 
-  /** Marca todo como touched y ejecuta la acción si el formulario es válido. */
+  /** Marks everything as touched and executes the action if the form is valid. */
   async submit(action: (value: Record<string, unknown>) => Promise<void> | void): Promise<void> {
     const f = this.form();
     if (!f) return;

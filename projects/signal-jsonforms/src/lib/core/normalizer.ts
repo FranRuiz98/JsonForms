@@ -2,14 +2,14 @@ import { DataType, FieldConfig, FieldNode, FormConfig, FormDefinition } from './
 import { validateConfig } from './definition-schema';
 
 export interface NormalizeOptions {
-  /** Validar la definición con el meta-schema zod antes de normalizar (por defecto true). */
+  /** Validate the definition with the zod meta-schema before normalizing (default: true). */
   validate?: boolean;
 }
 
 /**
- * Normaliza el JSON (FormConfig) a la IR: árbol de FieldNode con paths absolutos
- * y validadores normalizados. Soporta controles, grupos anidados y arrays.
- * Por defecto valida primero la definición con zod (errores tempranos y claros).
+ * Normalizes the JSON (FormConfig) to the IR: a FieldNode tree with absolute paths
+ * and normalized validators. Supports controls, nested groups, and arrays.
+ * By default validates the definition with zod first (early, clear errors).
  */
 export function normalizeConfig(config: FormConfig, options?: NormalizeOptions): FormDefinition {
   const validated = options?.validate === false ? config : validateConfig(config);
@@ -20,7 +20,7 @@ export function normalizeConfig(config: FormConfig, options?: NormalizeOptions):
 function toNode(field: FieldConfig, parentPath: string[]): FieldNode {
   const path = [...parentPath, field.key];
 
-  // Grupo
+  // Group
   if (field.type === 'group' || field.fields) {
     const children = (field.fields ?? []).map((c) => toNode(c, path));
     return base(field, 'group', path, 'object', children);
@@ -29,7 +29,7 @@ function toNode(field: FieldConfig, parentPath: string[]): FieldNode {
   // Array
   if (field.type === 'array' || field.item) {
     if (!field.item) {
-      throw new Error(`normalizeConfig: el array "${field.key}" necesita un "item".`);
+      throw new Error(`normalizeConfig: the array "${field.key}" requires an "item".`);
     }
     const item = toNode(field.item, []);
     const node = base(field, 'array', path, 'array', []);
@@ -63,7 +63,7 @@ function base(
   };
 }
 
-/** Heurística de tipo de dato cuando el campo no lo declara explícitamente. */
+/** Data type heuristic when the field does not declare it explicitly. */
 function inferDataType(field: FieldConfig): DataType {
   switch (field.type) {
     case 'number':

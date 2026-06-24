@@ -7,27 +7,27 @@ import { JsonFormsConfig } from './registry/types';
 import { SignalForms } from './adapter/signal-forms.adapter';
 
 export interface BuildSignalFormResult {
-  /** FieldTree raíz devuelto por form(). */
+  /** Root FieldTree returned by form(). */
   form: unknown;
-  /** WritableSignal del modelo (fuente de la verdad). */
+  /** WritableSignal of the model (source of truth). */
   model: WritableSignal<Record<string, unknown>>;
-  /** IR normalizada (útil para el renderer). */
+  /** Normalized IR (useful for the renderer). */
   definition: FormDefinition;
 }
 
 export interface BuildSignalFormOptions {
-  /** Contexto de inyección requerido por form(). */
+  /** Injection context required by form(). */
   injector: Injector;
-  /** Signal del modelo a usar (p. ej. el model() de <jf-form> para two-way binding). */
+  /** Model signal to use (e.g. the model() from <jf-form> for two-way binding). */
   model?: WritableSignal<Record<string, unknown>>;
   registries?: JsonFormsConfig;
-  /** Validar la definición con el meta-schema zod (por defecto true). */
+  /** Validate the definition with the zod meta-schema (default: true). */
   validate?: boolean;
 }
 
 /**
- * API de bajo nivel: JSON -> { form, model }.
- * Encadena validateConfig (zod) -> normalize -> buildInitialModel -> compileSchema -> form().
+ * Low-level API: JSON -> { form, model }.
+ * Chains validateConfig (zod) -> normalize -> buildInitialModel -> compileSchema -> form().
  */
 export function buildSignalForm(
   config: FormConfig,

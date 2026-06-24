@@ -7,11 +7,11 @@ import { JSON_FORMS_CONFIG } from '../registry/tokens';
 import { JSON_FORMS_RUNTIME } from './form-runtime';
 
 /**
- * Renderiza un campo de forma recursiva, respetando el estado hidden:
- * - control: lo envuelve en el wrapper resuelto (config.wrapper ?? defaultWrapper)
- *   o, si no hay, instancia el componente del FieldTypeRegistry directamente.
- * - group:   fieldset que recurre en sus hijos.
- * - array:   itera el FieldTree del array y permite añadir/quitar items.
+ * Renders a field recursively, honoring the hidden state:
+ * - control: wraps it in the resolved wrapper (config.wrapper ?? defaultWrapper)
+ *   or, if none, instantiates the FieldTypeRegistry component directly.
+ * - group:   fieldset that recurses into its children.
+ * - array:   iterates the array FieldTree and allows adding/removing items.
  */
 @Component({
   selector: 'jf-field-renderer',
@@ -47,10 +47,10 @@ import { JSON_FORMS_RUNTIME } from './form-runtime';
                     [field]="itemField"
                     [path]="path().concat($index)" />
                 }
-                <button type="button" class="jf-remove" (click)="removeItem($index)">Quitar</button>
+                <button type="button" class="jf-remove" (click)="removeItem($index)">Remove</button>
               </div>
             }
-            <button type="button" class="jf-add" (click)="addItem()">Añadir</button>
+            <button type="button" class="jf-add" (click)="addItem()">Add</button>
           </fieldset>
         }
         @default {
@@ -59,7 +59,7 @@ import { JSON_FORMS_RUNTIME } from './form-runtime';
           } @else if (component(); as cmp) {
             <ng-container [ngComponentOutlet]="cmp" [ngComponentOutletInputs]="inputs()" />
           } @else {
-            <div class="jf-unknown">Tipo de campo no registrado: "{{ node().config.type }}"</div>
+            <div class="jf-unknown">Unregistered field type: "{{ node().config.type }}"</div>
           }
         }
       }
@@ -74,7 +74,7 @@ export class FieldRendererComponent {
   readonly field = input.required<FieldTree<unknown>>();
   readonly path = input<ReadonlyArray<string | number>>([]);
 
-  /** Estado hidden del campo (reactivo); si está oculto no se renderiza. */
+  /** Reactive hidden state of the field; if hidden the field is not rendered. */
   protected readonly hidden = computed(() => {
     try {
       return !!(this.field() as any)().hidden();
@@ -83,7 +83,7 @@ export class FieldRendererComponent {
     }
   });
 
-  /** Wrapper resuelto para el control (config.wrapper o defaultWrapper). */
+  /** Resolved wrapper for the control (config.wrapper or defaultWrapper). */
   protected readonly wrapper = computed(() => {
     const key = this.node().config.wrapper ?? this.registries.defaultWrapper;
     return key ? (this.registries.wrappers?.[key] ?? null) : null;

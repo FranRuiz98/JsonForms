@@ -3,7 +3,7 @@ import { SignalFormsApi } from '../adapter/signal-forms.adapter';
 import { JsonFormsConfig, ValidationResult } from '../registry/types';
 import { compileExpression, ExprContext } from '../expression/expression-engine';
 
-/** Resuelve un path del SchemaPathTree por clave (runtime). */
+/** Resolves a SchemaPathTree path by key (runtime). */
 export const resolvePath = (root: any, keys: ReadonlyArray<string>): any =>
   keys.reduce((p, k) => p[k], root);
 
@@ -16,9 +16,9 @@ interface CompileCtx {
 }
 
 /**
- * Genera la schemaFn dinámica que form() ejecuta una vez. Recorre la IR de forma
- * recursiva: grupos recurren, arrays usan applyEach. Aplica validadores estándar,
- * cross-field (DSL/registro), async (validateAsync) y reglas condicionales.
+ * Generates the dynamic schemaFn that form() executes once. Traverses the IR
+ * recursively: groups recurse, arrays use applyEach. Applies standard validators,
+ * cross-field (DSL/registry), async (validateAsync), and conditional rules.
  */
 export function compileSchema(
   nodes: FieldNode[],
@@ -38,18 +38,18 @@ function applySchema(nodes: FieldNode[], pathNode: any, cc: CompileCtx): void {
 }
 
 function applyNode(node: FieldNode, p: any, cc: CompileCtx): void {
-  // Validadores síncronos (estándar + cross-field expr/fn).
+  // Synchronous validators (standard + cross-field expr/fn).
   for (const v of node.validators) applyValidator(cc, p, v);
 
-  // Validadores asíncronos (siempre por registro).
+  // Async validators (always via registry).
   for (const av of node.asyncValidators) applyAsyncValidator(cc, p, av);
 
-  // Reglas condicionales (DSL o función registrada).
+  // Conditional rules (DSL or registered function).
   applyConditional(cc, p, node.config.hidden, 'hidden');
   applyConditional(cc, p, node.config.disabled, 'disabled');
   applyConditional(cc, p, node.config.readonly, 'readonly');
 
-  // Estructura.
+  // Structure.
   if (node.kind === 'group') {
     applySchema(node.children, p, cc);
   } else if (node.kind === 'array' && node.item) {
@@ -58,7 +58,7 @@ function applyNode(node: FieldNode, p: any, cc: CompileCtx): void {
   }
 }
 
-// --- Validación síncrona ---
+// --- Synchronous validation ---
 
 function applyValidator(cc: CompileCtx, p: any, v: ValidatorConfig): void {
   if (STANDARD.has(v.kind)) {
@@ -68,13 +68,13 @@ function applyValidator(cc: CompileCtx, p: any, v: ValidatorConfig): void {
   if (v.kind === 'expr' && v.expr) {
     const compiled = compileExpression(v.expr);
     cc.api.validate(p, (fc: any) =>
-      compiled(exprContext(cc, fc)) ? undefined : { kind: 'expr', message: v.message ?? 'Valor no válido' },
+      compiled(exprContext(cc, fc)) ? undefined : { kind: 'expr', message: v.message ?? 'Invalid value' },
     );
     return;
   }
   if (v.kind === 'fn' && v.fn) {
     const fn = cc.registries?.validators?.[v.fn];
-    if (!fn) throw new Error(`compileSchema: validador "${v.fn}" no registrado.`);
+    if (!fn) throw new Error(`compileSchema: validator "${v.fn}" is not registered.`);
     cc.api.validate(p, (fc: any): ValidationResult => fn(dynamicContext(cc, fc)) ?? undefined);
   }
 }
@@ -106,11 +106,11 @@ function applyStandardValidator(api: SignalFormsApi, path: any, v: ValidatorConf
   }
 }
 
-// --- Validación asíncrona ---
+// --- Async validation ---
 
 function applyAsyncValidator(cc: CompileCtx, p: any, av: AsyncValidatorConfig): void {
   const def = cc.registries?.asyncValidators?.[av.kind];
-  if (!def) throw new Error(`compileSchema: validador async "${av.kind}" no registrado.`);
+  if (!def) throw new Error(`compileSchema: async validator "${av.kind}" is not registered.`);
   if (av.debounce) cc.api.debounce(p, av.debounce);
   (cc.api.validateAsync as any)(p, {
     params: def.params,
@@ -120,7 +120,7 @@ function applyAsyncValidator(cc: CompileCtx, p: any, av: AsyncValidatorConfig): 
   });
 }
 
-// --- Reglas condicionales ---
+// --- Conditional rules ---
 
 type BooleanRule = 'hidden' | 'disabled' | 'readonly';
 
@@ -136,13 +136,13 @@ function booleanRule(cc: CompileCtx, dyn: DynamicExpr): (fc: any) => boolean {
     return (fc: any) => !!compiled(exprContext(cc, fc));
   }
   const fn = cc.registries?.functions?.[dyn.fn];
-  if (!fn) throw new Error(`compileSchema: función "${dyn.fn}" no registrada.`);
+  if (!fn) throw new Error(`compileSchema: function "${dyn.fn}" is not registered.`);
   return (fc: any) => !!fn(dynamicContext(cc, fc));
 }
 
-// --- Contextos reactivos ---
+// --- Reactive contexts ---
 
-/** Proxy que lee el modelo por path a través de valueOf (mantiene el tracking). */
+/** Proxy that reads the model by path via valueOf (maintains tracking). */
 function modelProxy(root: any, valueOf: (p: any) => any, base: string[] = []): any {
   return new Proxy(
     {},

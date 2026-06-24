@@ -5,8 +5,8 @@ import { MatSelectFieldComponent } from './fields/select-field.component';
 import { MatCheckboxFieldComponent } from './fields/checkbox-field.component';
 
 /**
- * Registro de tipos de campo del adaptador de referencia (Angular Material).
- * Se pasa a provideJsonForms({ fieldTypes: MATERIAL_FIELD_TYPES }).
+ * Field type registry for the reference adapter (Angular Material).
+ * Passed to provideJsonForms({ fieldTypes: MATERIAL_FIELD_TYPES }).
  */
 export const MATERIAL_FIELD_TYPES: FieldTypeRegistry = {
   text: MatTextFieldComponent,

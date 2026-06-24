@@ -4,49 +4,49 @@ import { validateConfig } from '../../src/lib/core/definition-schema';
 // ── validateConfig ─────────────────────────────────────────────────────────
 
 describe('validateConfig', () => {
-  describe('configs válidas', () => {
-    it('acepta un campo mínimo (key + type)', () => {
+  describe('valid configs', () => {
+    it('accepts a minimal field (key + type)', () => {
       expect(() => validateConfig({ fields: [{ key: 'name', type: 'text' }] })).not.toThrow();
     });
 
-    it('devuelve la config parseada', () => {
+    it('returns the parsed config', () => {
       const result = validateConfig({ fields: [{ key: 'name', type: 'text' }] });
       expect(result.fields[0].key).toBe('name');
     });
 
-    it('acepta version e id opcionales', () => {
+    it('accepts optional version and id', () => {
       expect(() =>
         validateConfig({ version: '1.0', id: 'myForm', fields: [{ key: 'x', type: 'text' }] }),
       ).not.toThrow();
     });
 
-    it('acepta label, props y defaultValue opcionales', () => {
+    it('accepts optional label, props, and defaultValue', () => {
       expect(() =>
         validateConfig({
           fields: [{
             key: 'x', type: 'text',
-            label: 'Mi campo',
-            props: { placeholder: 'Escribe aquí' },
+            label: 'My field',
+            props: { placeholder: 'Type here' },
             defaultValue: 'default',
           }],
         }),
       ).not.toThrow();
     });
 
-    it('acepta wrapper opcional', () => {
+    it('accepts optional wrapper', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', wrapper: 'myWrapper' }] }),
       ).not.toThrow();
     });
 
-    it('acepta validators estándar', () => {
+    it('accepts standard validators', () => {
       expect(() =>
         validateConfig({
           fields: [{
             key: 'email', type: 'text',
             validators: [
               { kind: 'required' },
-              { kind: 'email', message: 'Correo inválido' },
+              { kind: 'email', message: 'Invalid email' },
               { kind: 'minLength', value: 3 },
               { kind: 'maxLength', value: 100 },
               { kind: 'min', value: 0 },
@@ -58,43 +58,43 @@ describe('validateConfig', () => {
       ).not.toThrow();
     });
 
-    it('acepta validador expr con expr presente', () => {
+    it('accepts expr validator with expr present', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', validators: [{ kind: 'expr', expr: 'value !== ""' }] }] }),
       ).not.toThrow();
     });
 
-    it('acepta validador fn con fn presente', () => {
+    it('accepts fn validator with fn present', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', validators: [{ kind: 'fn', fn: 'myValidator' }] }] }),
       ).not.toThrow();
     });
 
-    it('acepta asyncValidators', () => {
+    it('accepts asyncValidators', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'user', type: 'text', asyncValidators: [{ kind: 'uniqueEmail', debounce: 300 }] }] }),
       ).not.toThrow();
     });
 
-    it('acepta hidden con expr', () => {
+    it('accepts hidden with expr', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', hidden: { expr: 'value === ""' } }] }),
       ).not.toThrow();
     });
 
-    it('acepta disabled con fn', () => {
+    it('accepts disabled with fn', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', disabled: { fn: 'isDisabled' } }] }),
       ).not.toThrow();
     });
 
-    it('acepta readonly con expr', () => {
+    it('accepts readonly with expr', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', readonly: { fn: 'isReadonly' } }] }),
       ).not.toThrow();
     });
 
-    it('acepta grupo con fields', () => {
+    it('accepts group with fields', () => {
       expect(() =>
         validateConfig({
           fields: [{
@@ -105,7 +105,7 @@ describe('validateConfig', () => {
       ).not.toThrow();
     });
 
-    it('acepta array con item', () => {
+    it('accepts array with item', () => {
       expect(() =>
         validateConfig({
           fields: [{
@@ -116,7 +116,7 @@ describe('validateConfig', () => {
       ).not.toThrow();
     });
 
-    it('acepta múltiples campos', () => {
+    it('accepts multiple fields', () => {
       expect(() =>
         validateConfig({
           fields: [
@@ -129,64 +129,64 @@ describe('validateConfig', () => {
     });
   });
 
-  describe('errores por config inválida', () => {
-    it('lanza si fields está vacío', () => {
+  describe('errors for invalid config', () => {
+    it('throws if fields is empty', () => {
       expect(() => validateConfig({ fields: [] })).toThrow();
     });
 
-    it('lanza si fields falta', () => {
+    it('throws if fields is missing', () => {
       expect(() => validateConfig({})).toThrow();
     });
 
-    it('lanza si key está vacío', () => {
+    it('throws if key is empty', () => {
       expect(() => validateConfig({ fields: [{ key: '', type: 'text' }] })).toThrow();
     });
 
-    it('lanza si type está vacío', () => {
+    it('throws if type is empty', () => {
       expect(() => validateConfig({ fields: [{ key: 'x', type: '' }] })).toThrow();
     });
 
-    it('lanza si type falta', () => {
+    it('throws if type is missing', () => {
       expect(() => validateConfig({ fields: [{ key: 'x' }] })).toThrow();
     });
 
-    it('lanza si key falta', () => {
+    it('throws if key is missing', () => {
       expect(() => validateConfig({ fields: [{ type: 'text' }] })).toThrow();
     });
 
-    it('lanza si array no tiene item', () => {
+    it('throws if array has no item', () => {
       expect(() => validateConfig({ fields: [{ key: 'tags', type: 'array' }] })).toThrow(/item/);
     });
 
-    it('lanza si group no tiene fields', () => {
+    it('throws if group has no fields', () => {
       expect(() => validateConfig({ fields: [{ key: 'addr', type: 'group' }] })).toThrow(/fields/);
     });
 
-    it('lanza si validador expr no tiene expr', () => {
+    it('throws if expr validator has no expr', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', validators: [{ kind: 'expr' }] }] }),
       ).toThrow(/expr/);
     });
 
-    it('lanza si validador fn no tiene fn', () => {
+    it('throws if fn validator has no fn', () => {
       expect(() =>
         validateConfig({ fields: [{ key: 'x', type: 'text', validators: [{ kind: 'fn' }] }] }),
       ).toThrow(/fn/);
     });
 
-    it('produce un mensaje de error legible con prefijo', () => {
+    it('produces a readable error message with prefix', () => {
       try {
         validateConfig({ fields: [] });
-        expect.fail('debería haber lanzado');
+        expect.fail('should have thrown');
       } catch (err: unknown) {
-        expect((err as Error).message).toContain('Definición de formulario inválida');
+        expect((err as Error).message).toContain('Invalid form definition');
       }
     });
 
-    it('enumera todos los errores en el mensaje', () => {
+    it('lists all errors in the message', () => {
       try {
         validateConfig({ fields: [{ key: '', type: '' }] });
-        expect.fail('debería haber lanzado');
+        expect.fail('should have thrown');
       } catch (err: unknown) {
         const msg = (err as Error).message;
         expect(msg).toContain('  - ');

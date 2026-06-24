@@ -9,14 +9,14 @@
 
 <main class="pg-main">
   <section class="pg-intro">
-    <h1>Formularios dinámicos desde JSON</h1>
+    <h1>Dynamic forms from JSON</h1>
     <p>
-      La definición de la izquierda genera, en vivo, el formulario de la derecha.
-      Edítala libremente o carga uno de los ejemplos para ver el alcance del sistema.
+      The definition on the left generates, live, the form on the right.
+      Edit it freely or load one of the examples to see the library's scope.
     </p>
   </section>
 
-  <nav class="pg-examples" aria-label="Ejemplos">
+  <nav class="pg-examples" aria-label="Examples">
     @for (ex of examples; track ex.id) {
       <button
         type="button"
@@ -37,24 +37,24 @@
     <!-- ── Editor ── -->
     <section class="pg-card pg-editor-card">
       <header class="pg-card-head">
-        <span class="pg-card-title">Definición JSON</span>
+        <span class="pg-card-title">JSON Definition</span>
         <div class="pg-card-tools">
           <button
             type="button"
             class="pg-ghost"
             [class.active]="refOpen()"
             (click)="refOpen.update(v => !v)">
-            Referencia API
+            API Reference
           </button>
           <button
             type="button"
             class="pg-ghost"
             [class.active]="archOpen()"
             (click)="archOpen.update(v => !v)">
-            Arquitectura
+            Architecture
           </button>
-          <button type="button" class="pg-ghost" (click)="format()">Formatear</button>
-          <button type="button" class="pg-ghost" (click)="copy()">Copiar</button>
+          <button type="button" class="pg-ghost" (click)="format()">Format</button>
+          <button type="button" class="pg-ghost" (click)="copy()">Copy</button>
         </div>
       </header>
 
@@ -71,15 +71,15 @@
         @if (error(); as e) {
           <pre class="pg-statusbar-msg">{{ e }}</pre>
         } @else {
-          <span class="pg-statusbar-msg">Definición válida · formulario actualizado</span>
+          <span class="pg-statusbar-msg">Valid definition · form updated</span>
         }
       </footer>
     </section>
 
-    <!-- ── Vista previa ── -->
+    <!-- ── Preview ── -->
     <section class="pg-card">
       <header class="pg-card-head">
-        <span class="pg-card-title">Vista previa</span>
+        <span class="pg-card-title">Preview</span>
       </header>
 
       <div class="pg-form-body">
@@ -93,11 +93,11 @@
                 class="pg-submit"
                 [disabled]="f.invalid()"
                 (click)="f.submit(onSubmit)">
-                Enviar
+                Submit
               </button>
               <span class="pg-state" [class.ok]="!f.invalid()">
                 <span class="pg-state-dot"></span>
-                {{ f.invalid() ? 'Incompleto / con errores' : 'Formulario válido' }}
+                {{ f.invalid() ? 'Incomplete / with errors' : 'Form valid' }}
               </span>
             </footer>
           }
@@ -105,41 +105,41 @@
       </div>
     </section>
 
-    <!-- ── Modelo ── -->
+    <!-- ── Model ── -->
     <section class="pg-card">
       <header class="pg-card-head">
-        <span class="pg-card-title">Modelo</span>
+        <span class="pg-card-title">Model</span>
         <div class="pg-card-tools">
-          <button type="button" class="pg-ghost" (click)="resetData()">Reiniciar</button>
+          <button type="button" class="pg-ghost" (click)="resetData()">Reset</button>
         </div>
       </header>
       <pre class="pg-model">{{ data() | json }}</pre>
     </section>
   </div>
 
-  <!-- ── Panel de referencia de la API ── -->
+  <!-- ── API reference panel ── -->
   @if (refOpen()) {
-    <section class="pg-ref" role="region" aria-label="Referencia de la API JSON">
+    <section class="pg-ref" role="region" aria-label="JSON API Reference">
       <header class="pg-ref-head">
         <div class="pg-ref-heading">
           <span class="pg-ref-icon">{{ '{ }' }}</span>
           <div class="pg-ref-headtext">
-            <h2 class="pg-ref-title">Referencia de la API JSON</h2>
+            <h2 class="pg-ref-title">JSON API Reference</h2>
             <p class="pg-ref-sub">
-              Todo lo que puedes declarar en la definición. Los niveles 1–4 son 100% self-contained;
-              el nivel 5 combina JSON con helpers registrados en <code>provideJsonForms()</code>.
+              Everything you can declare in the definition. Levels 1–4 are 100% self-contained;
+              level 5 combines JSON with helpers registered in <code>provideJsonForms()</code>.
             </p>
           </div>
         </div>
         <button
           type="button"
           class="pg-ref-close"
-          aria-label="Cerrar referencia"
+          aria-label="Close reference"
           (click)="refOpen.set(false)">✕</button>
       </header>
 
       <div class="pg-ref-body">
-        <nav class="pg-ref-tabs" role="tablist" aria-label="Secciones de la referencia">
+        <nav class="pg-ref-tabs" role="tablist" aria-label="Reference sections">
           @for (tab of refTabs; track tab.id) {
             <button
               type="button"
@@ -159,11 +159,11 @@
 
             @case ('field') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Estructura de un campo</h3>
+                <h3 class="pg-ref-h">Field structure</h3>
                 <p class="pg-ref-lead">
-                  Cada entrada del array <code>fields</code> es un objeto con dos claves obligatorias
-                  (<code>key</code> y <code>type</code>) y el resto opcionales. El sistema infiere valores
-                  razonables cuando no se declaran explícitamente.
+                  Each entry in the <code>fields</code> array is an object with two required keys
+                  (<code>key</code> and <code>type</code>) and the rest optional. The system infers
+                  reasonable values when not explicitly declared.
                 </p>
                 <div class="pg-ref-twocol">
                   <dl class="pg-ref-props">
@@ -171,71 +171,71 @@
                     <div class="pg-ref-prop">
                       <dt>
                         <code class="pg-ref-prop-key">key</code>
-                        <span class="pg-ref-badge pg-ref-badge--req">requerido</span>
+                        <span class="pg-ref-badge pg-ref-badge--req">required</span>
                       </dt>
-                      <dd>Identificador único del campo en su nivel de anidación. Se convierte directamente en la clave del modelo resultante. En grupos, cada nivel tiene su propio espacio de nombres, por lo que la misma clave puede aparecer en distintos grupos sin conflicto.</dd>
+                      <dd>Unique identifier for the field at its nesting level. It maps directly to the key in the resulting model. In groups, each level has its own namespace, so the same key can appear in different groups without conflict.</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt>
                         <code class="pg-ref-prop-key">type</code>
-                        <span class="pg-ref-badge pg-ref-badge--req">requerido</span>
+                        <span class="pg-ref-badge pg-ref-badge--req">required</span>
                       </dt>
-                      <dd>Controla qué control de UI se renderiza y cómo se serializa el valor. Ver pestaña <em>Tipos de campo</em> para la lista completa.</dd>
+                      <dd>Controls which UI control is rendered and how the value is serialized. See the <em>Field types</em> tab for the complete list.</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt><code class="pg-ref-prop-key">dataType</code></dt>
-                      <dd><code>string</code> · <code>number</code> · <code>boolean</code>. Se infiere del <code>type</code> cuando se omite (<code>checkbox</code> → <code>boolean</code>, <code>number</code> → <code>number</code>, el resto → <code>string</code>). Solo es necesario declararlo explícitamente cuando el tipo visual no coincide con el dato deseado.</dd>
+                      <dd><code>string</code> · <code>number</code> · <code>boolean</code>. Inferred from <code>type</code> when omitted (<code>checkbox</code> → <code>boolean</code>, <code>number</code> → <code>number</code>, others → <code>string</code>). Only needs to be declared explicitly when the visual type does not match the desired data type.</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt><code class="pg-ref-prop-key">label</code></dt>
-                      <dd>Texto visible que acompaña al control en la UI. Si se omite, se muestra el valor de <code>key</code> auto-formateado (camelCase → palabras separadas).</dd>
+                      <dd>Visible text accompanying the control in the UI. If omitted, the <code>key</code> value is displayed auto-formatted (camelCase → separated words).</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt><code class="pg-ref-prop-key">defaultValue</code></dt>
-                      <dd>Valor inicial del campo al crear o resetear el formulario. Debe ser compatible con <code>dataType</code>. Si se omite, los campos de texto parten de <code>""</code>, los numéricos de <code>0</code> y los booleanos de <code>false</code>.</dd>
+                      <dd>Initial value of the field when creating or resetting the form. Must be compatible with <code>dataType</code>. If omitted, text fields default to <code>""</code>, numeric to <code>0</code>, and boolean to <code>false</code>.</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt><code class="pg-ref-prop-key">props</code></dt>
                       <dd>
-                        Opciones adicionales del control:
+                        Additional control options:
                         <ul class="pg-ref-sublist">
-                          <li><code>placeholder</code> — texto fantasma dentro del input mientras está vacío</li>
-                          <li><code>hint</code> — texto de ayuda que aparece debajo del campo</li>
-                          <li><code>description</code> — párrafo descriptivo que aparece encima del campo</li>
-                          <li><code>options</code> — array <code>[{{ '{' }} value, label {{ '}' }}]</code> obligatorio para <code>select</code></li>
+                          <li><code>placeholder</code> — ghost text inside the input while empty</li>
+                          <li><code>hint</code> — help text that appears below the field</li>
+                          <li><code>description</code> — descriptive paragraph that appears above the field</li>
+                          <li><code>options</code> — <code>[{{ '{' }} value, label {{ '}' }}]</code> array required for <code>select</code></li>
                         </ul>
                       </dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt><code class="pg-ref-prop-key">hidden · disabled · readonly</code></dt>
-                      <dd>Condiciones reactivas que se reevalúan en cada cambio del modelo. Acepta <code>{{ '{' }} "expr": "..." {{ '}' }}</code> para expresiones DSL self-contained, o <code>{{ '{' }} "fn": "clave" {{ '}' }}</code> para llamar a una función registrada en <code>provideJsonForms()</code>. Ver pestañas <em>DSL</em> y <em>Funciones registradas</em>.</dd>
+                      <dd>Reactive conditions re-evaluated on every model change. Accepts <code>{{ '{' }} "expr": "..." {{ '}' }}</code> for self-contained DSL expressions, or <code>{{ '{' }} "fn": "key" {{ '}' }}</code> to call a function registered in <code>provideJsonForms()</code>. See the <em>DSL</em> and <em>Registered functions</em> tabs.</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt><code class="pg-ref-prop-key">validators · asyncValidators</code></dt>
-                      <dd>Arrays de reglas de validación. Los síncronos se evalúan en cada cambio de valor y bloquean el envío si fallan. Los asíncronos soportan <code>debounce</code> para reducir llamadas al servidor. Ver pestaña <em>Validadores</em>.</dd>
+                      <dd>Arrays of validation rules. Synchronous ones are evaluated on every value change and block submission on failure. Async ones support <code>debounce</code> to reduce server calls. See the <em>Validators</em> tab.</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt>
                         <code class="pg-ref-prop-key">fields</code>
-                        <span class="pg-ref-badge">solo group</span>
+                        <span class="pg-ref-badge">group only</span>
                       </dt>
-                      <dd>Array de campos anidados que componen el grupo. En el modelo, el grupo genera un objeto cuya clave es la del campo padre y cuyo valor contiene los campos internos.</dd>
+                      <dd>Array of nested fields that make up the group. In the model, the group produces an object whose key is the parent field key and whose value contains the inner fields.</dd>
                     </div>
 
                     <div class="pg-ref-prop">
                       <dt>
                         <code class="pg-ref-prop-key">item</code>
-                        <span class="pg-ref-badge">solo array</span>
+                        <span class="pg-ref-badge">array only</span>
                       </dt>
-                      <dd>Definición del elemento repetible. La UI genera botones «Añadir» y «Quitar» automáticamente. El modelo almacena un array de objetos según la estructura de <code>item</code>. Habitualmente <code>item</code> es un <code>group</code> con su propio <code>fields</code>.</dd>
+                      <dd>Definition of the repeatable element. The UI automatically generates "Add" and "Remove" buttons. The model stores an array of objects following the structure of <code>item</code>. Typically <code>item</code> is a <code>group</code> with its own <code>fields</code>.</dd>
                     </div>
 
                   </dl>
@@ -246,20 +246,20 @@
 
             @case ('types') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Tipos de campo (<code>type</code>)</h3>
+                <h3 class="pg-ref-h">Field types (<code>type</code>)</h3>
                 <p class="pg-ref-lead">
-                  El <code>type</code> determina simultáneamente el control visual que se renderiza
-                  y el tipo de dato que el campo produce en el modelo. Los tipos primitivos generan
-                  un valor escalar; los compuestos (<code>group</code>, <code>array</code>) generan
-                  estructuras anidadas que se reflejan directamente en el modelo del formulario.
+                  The <code>type</code> simultaneously determines the visual control that is rendered
+                  and the data type the field produces in the model. Primitive types produce a scalar
+                  value; composite types (<code>group</code>, <code>array</code>) produce nested
+                  structures that are reflected directly in the form model.
                 </p>
                 <table class="pg-ref-table">
                   <thead>
                     <tr>
                       <th>type</th>
                       <th>Control</th>
-                      <th>Valor en modelo</th>
-                      <th>Requiere</th>
+                      <th>Model value</th>
+                      <th>Requires</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -274,70 +274,70 @@
                   </tbody>
                 </table>
                 <div class="pg-ref-callout">
-                  <strong>Inferencia de dataType:</strong> <code>checkbox</code> produce <code>boolean</code>
-                  y <code>number</code> produce <code>number</code> automáticamente.
-                  Para el resto el valor es siempre <code>string</code> salvo que se declare <code>dataType</code>
-                  explícitamente — útil cuando un <code>text</code> debe almacenarse como número o un <code>select</code>
-                  debe retornar un booleano.
+                  <strong>dataType inference:</strong> <code>checkbox</code> produces <code>boolean</code>
+                  and <code>number</code> produces <code>number</code> automatically.
+                  For the rest, the value is always <code>string</code> unless <code>dataType</code>
+                  is declared explicitly — useful when a <code>text</code> should be stored as a number
+                  or a <code>select</code> should return a boolean.
                 </div>
               </article>
             }
 
             @case ('validators') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Validadores (<code>validators</code>)</h3>
+                <h3 class="pg-ref-h">Validators (<code>validators</code>)</h3>
                 <p class="pg-ref-lead">
-                  Los validadores se declaran como array en la clave <code>validators</code> del campo.
-                  Todos admiten la clave opcional <code>"message"</code> para personalizar el texto de error.
-                  Hay cuatro categorías según su origen y modo de ejecución: estándar, DSL, síncrono registrado y asíncrono.
+                  Validators are declared as an array under the field's <code>validators</code> key.
+                  All support the optional <code>"message"</code> key to customize the error text.
+                  There are four categories based on their origin and execution mode: standard, DSL, registered synchronous, and asynchronous.
                 </p>
                 <div class="pg-ref-twocol">
                   <dl class="pg-ref-props">
 
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">Estándar · self-contained</span></dt>
+                      <dt><span class="pg-ref-cat-label">Standard · self-contained</span></dt>
                       <dd>
-                        Reglas integradas en el motor que no requieren ningún registro externo: se declaran
-                        únicamente en el JSON. Son <code>required</code> (campo obligatorio),
-                        <code>email</code> (formato de correo), <code>min</code> / <code>max</code>
-                        (rango numérico), <code>minLength</code> / <code>maxLength</code> (longitud de texto)
-                        y <code>pattern</code> (expresión regular). Todos admiten <code>"message"</code>
-                        para sobrescribir el error por defecto.
+                        Rules built into the engine that require no external registry: declared
+                        solely in the JSON. These are <code>required</code> (mandatory field),
+                        <code>email</code> (email format), <code>min</code> / <code>max</code>
+                        (numeric range), <code>minLength</code> / <code>maxLength</code> (text length),
+                        and <code>pattern</code> (regular expression). All support <code>"message"</code>
+                        to override the default error.
                       </dd>
                     </div>
 
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">expr · validación cross-field con DSL</span></dt>
+                      <dt><span class="pg-ref-cat-label">expr · cross-field validation with DSL</span></dt>
                       <dd>
-                        El campo es válido cuando la expresión DSL evalúa a <code>true</code>.
-                        Útil para comparar el valor con otro campo del formulario, por ejemplo
-                        <code>"value === model.emailConfirm"</code>. Se ejecuta en el mismo evaluador
-                        seguro del DSL (sin <code>eval</code>), por lo que también es self-contained.
-                        Ver pestaña <em>DSL de expresiones</em> para conocer la sintaxis disponible.
+                        The field is valid when the DSL expression evaluates to <code>true</code>.
+                        Useful for comparing the value against another form field, for example
+                        <code>"value === model.emailConfirm"</code>. Runs in the same safe DSL evaluator
+                        (no <code>eval</code>), so it is also self-contained.
+                        See the <em>Expression DSL</em> tab for available syntax.
                       </dd>
                     </div>
 
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">fn · función síncrona registrada</span></dt>
+                      <dt><span class="pg-ref-cat-label">fn · registered synchronous function</span></dt>
                       <dd>
-                        Referencia a una función registrada en <code>provideJsonForms().validators</code>.
-                        Recibe un contexto con <code>value()</code> (valor actual), <code>valueAt(key)</code>
-                        (valor de otro campo) y <code>model()</code> (snapshot completo del modelo).
-                        Debe devolver <code>undefined</code> si el campo es válido, o
-                        <code>{{ '{' }} kind, message {{ '}' }}</code> si no lo es. Ideal para lógica compleja
-                        que no cabe en el DSL: uso de servicios Angular, expresiones regulares avanzadas, etc.
+                        Reference to a function registered in <code>provideJsonForms().validators</code>.
+                        Receives a context with <code>value()</code> (current value), <code>valueAt(key)</code>
+                        (value of another field), and <code>model()</code> (full model snapshot).
+                        Must return <code>undefined</code> if the field is valid, or
+                        <code>{{ '{' }} kind, message {{ '}' }}</code> if not. Ideal for complex logic
+                        that does not fit in the DSL: Angular services, advanced regex, etc.
                       </dd>
                     </div>
 
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">Async · validación asíncrona</span></dt>
+                      <dt><span class="pg-ref-cat-label">Async · asynchronous validation</span></dt>
                       <dd>
-                        Se declara en el array <code>asyncValidators</code> del campo (no en <code>validators</code>).
-                        Referencia una clave registrada en <code>provideJsonForms().asyncValidators</code>.
-                        El campo <code>"debounce"</code> (ms) evita llamadas excesivas al servidor mientras
-                        el usuario escribe. El patrón usa <code>resource</code> de Angular: <code>params</code>
-                        define qué enviar, <code>factory</code> crea el resource, <code>onSuccess</code>
-                        interpreta el resultado y <code>onError</code> maneja fallos de red.
+                        Declared in the field's <code>asyncValidators</code> array (not <code>validators</code>).
+                        References a key registered in <code>provideJsonForms().asyncValidators</code>.
+                        The <code>"debounce"</code> field (ms) prevents excessive server calls while
+                        the user is typing. The pattern uses Angular's <code>resource</code>: <code>params</code>
+                        defines what to send, <code>factory</code> creates the resource, <code>onSuccess</code>
+                        interprets the result, and <code>onError</code> handles network failures.
                       </dd>
                     </div>
 
@@ -349,44 +349,44 @@
 
             @case ('structure') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Grupos y arrays</h3>
+                <h3 class="pg-ref-h">Groups and arrays</h3>
                 <p class="pg-ref-lead">
-                  Además de los tipos primitivos, puedes componer estructuras de datos complejas con
-                  <code>group</code> (objeto anidado) y <code>array</code> (lista repetible de elementos).
-                  Ambos se pueden combinar y anidar sin límite de profundidad.
+                  In addition to primitive types, you can compose complex data structures with
+                  <code>group</code> (nested object) and <code>array</code> (repeatable list of elements).
+                  Both can be combined and nested without depth limit.
                 </p>
                 <div class="pg-ref-twocol">
                   <div>
-                    <p class="pg-ref-cat-label pg-ref-cat-label--block">group — objeto anidado</p>
+                    <p class="pg-ref-cat-label pg-ref-cat-label--block">group — nested object</p>
                     <p class="pg-ref-p">
-                      Agrupa campos relacionados bajo una clave común. El valor del grupo en el modelo es
-                      un objeto que contiene los valores de sus <code>fields</code> internos. Por ejemplo,
-                      un grupo <code>"address"</code> con campos <code>"street"</code> y <code>"city"</code>
-                      produce <code>{{ '{' }} address: {{ '{' }} street: "...", city: "..." {{ '}' }} {{ '}' }}</code> en el modelo.
+                      Groups related fields under a common key. The group's value in the model is
+                      an object containing the values of its internal <code>fields</code>. For example,
+                      an <code>"address"</code> group with <code>"street"</code> and <code>"city"</code>
+                      fields produces <code>{{ '{' }} address: {{ '{' }} street: "...", city: "..." {{ '}' }} {{ '}' }}</code> in the model.
                     </p>
                     <p class="pg-ref-p">
-                      Los grupos pueden tener su propio <code>label</code>, <code>hidden</code>,
-                      <code>disabled</code> y validadores, que afectan al bloque completo.
-                      Un grupo oculto también oculta todos sus campos internos.
+                      Groups can have their own <code>label</code>, <code>hidden</code>,
+                      <code>disabled</code>, and validators, which affect the entire block.
+                      A hidden group also hides all its inner fields.
                     </p>
 
-                    <p class="pg-ref-cat-label pg-ref-cat-label--block">array — lista repetible</p>
+                    <p class="pg-ref-cat-label pg-ref-cat-label--block">array — repeatable list</p>
                     <p class="pg-ref-p">
-                      Genera una lista de cero o más entradas donde el usuario puede añadir o eliminar filas.
-                      Cada fila sigue la definición de <code>item</code>, que habitualmente es un
-                      <code>group</code> con sus propios campos. La UI añade los botones «Añadir» y «Quitar»
-                      automáticamente.
+                      Generates a list of zero or more entries where the user can add or remove rows.
+                      Each row follows the <code>item</code> definition, which is usually a
+                      <code>group</code> with its own fields. The UI adds "Add" and "Remove" buttons
+                      automatically.
                     </p>
                     <p class="pg-ref-p">
-                      El modelo almacena un array de objetos: si <code>item.fields</code> tiene <code>"name"</code>
-                      y <code>"phone"</code>, el resultado es <code>[{{ '{' }} name: "...", phone: "..." {{ '}' }}, ...]</code>.
-                      La clave de <code>item</code> no aparece en el modelo; son las claves internas de
-                      <code>fields</code> las que se guardan directamente en cada posición del array.
+                      The model stores an array of objects: if <code>item.fields</code> has <code>"name"</code>
+                      and <code>"phone"</code>, the result is <code>[{{ '{' }} name: "...", phone: "..." {{ '}' }}, ...]</code>.
+                      The <code>item</code> key does not appear in the model; only the internal
+                      <code>fields</code> keys are stored directly at each array position.
                     </p>
                     <div class="pg-ref-callout">
-                      <strong>Tip:</strong> los arrays pueden contener grupos que a su vez contengan
-                      otros arrays. La validación y las condiciones reactivas (<code>hidden</code>,
-                      <code>disabled</code>) funcionan a cualquier nivel de anidación.
+                      <strong>Tip:</strong> arrays can contain groups that in turn contain
+                      other arrays. Validation and reactive conditions (<code>hidden</code>,
+                      <code>disabled</code>) work at any nesting level.
                     </div>
                   </div>
                   <pre class="pg-ref-code">{{ ref.structure }}</pre>
@@ -396,57 +396,57 @@
 
             @case ('dsl') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">DSL de expresiones</h3>
+                <h3 class="pg-ref-h">Expression DSL</h3>
                 <p class="pg-ref-lead">
-                  El DSL es un evaluador de expresiones tipo JavaScript integrado en el motor.
-                  Se usa en <code>hidden</code>, <code>disabled</code>, <code>readonly</code> y en
-                  validadores <code>expr</code>. No usa <code>eval</code>: el árbol sintáctico se
-                  parsea una vez al cargar la definición y se reevalúa de forma reactiva con señales
-                  cada vez que cambia el modelo, sin coste adicional.
+                  The DSL is a JavaScript-like expression evaluator built into the engine.
+                  Used in <code>hidden</code>, <code>disabled</code>, <code>readonly</code>, and in
+                  <code>expr</code> validators. It does not use <code>eval</code>: the syntax tree is
+                  parsed once when the definition loads and re-evaluated reactively with signals
+                  whenever the model changes, with no additional cost.
                 </p>
                 <div class="pg-ref-twocol">
                   <div class="pg-ref-dsl-tables">
 
-                    <p class="pg-ref-cat-label pg-ref-cat-label--block">Identificadores disponibles</p>
+                    <p class="pg-ref-cat-label pg-ref-cat-label--block">Available identifiers</p>
                     <table class="pg-ref-table pg-ref-table--compact">
                       <thead>
-                        <tr><th>Identificador</th><th>Qué representa</th></tr>
+                        <tr><th>Identifier</th><th>What it represents</th></tr>
                       </thead>
                       <tbody>
                         <tr>
                           <td><code>value</code></td>
-                          <td>Valor actual del campo que contiene la expresión</td>
+                          <td>Current value of the field containing the expression</td>
                         </tr>
                         <tr>
                           <td><code>model.x</code></td>
-                          <td>Valor del campo <code>x</code> en la raíz del formulario</td>
+                          <td>Value of field <code>x</code> at the form root</td>
                         </tr>
                         <tr>
-                          <td><code>model.grupo.x</code></td>
-                          <td>Valor del campo <code>x</code> dentro del grupo <code>grupo</code></td>
+                          <td><code>model.group.x</code></td>
+                          <td>Value of field <code>x</code> inside group <code>group</code></td>
                         </tr>
                       </tbody>
                     </table>
 
-                    <p class="pg-ref-cat-label pg-ref-cat-label--block">Operadores soportados</p>
+                    <p class="pg-ref-cat-label pg-ref-cat-label--block">Supported operators</p>
                     <table class="pg-ref-table pg-ref-table--compact">
                       <thead>
-                        <tr><th>Operadores</th><th>Tipo</th></tr>
+                        <tr><th>Operators</th><th>Type</th></tr>
                       </thead>
                       <tbody>
-                        <tr><td><code>=== !== &lt; &gt; &lt;= &gt;=</code></td><td>Comparación</td></tr>
-                        <tr><td><code>&amp;&amp; || !</code></td><td>Lógicos</td></tr>
-                        <tr><td><code>+ - * / %</code></td><td>Aritméticos</td></tr>
-                        <tr><td><code>cond ? a : b</code></td><td>Ternario</td></tr>
-                        <tr><td><code>( )</code></td><td>Agrupación / precedencia</td></tr>
+                        <tr><td><code>=== !== &lt; &gt; &lt;= &gt;=</code></td><td>Comparison</td></tr>
+                        <tr><td><code>&amp;&amp; || !</code></td><td>Logical</td></tr>
+                        <tr><td><code>+ - * / %</code></td><td>Arithmetic</td></tr>
+                        <tr><td><code>cond ? a : b</code></td><td>Ternary</td></tr>
+                        <tr><td><code>( )</code></td><td>Grouping / precedence</td></tr>
                       </tbody>
                     </table>
 
                     <div class="pg-ref-callout">
-                      <strong>Seguridad garantizada:</strong> no se pueden llamar funciones,
-                      acceder a globales (<code>window</code>, <code>document</code>…) ni producir
-                      efectos secundarios. El DSL solo puede leer <code>value</code> y <code>model</code>.
-                      Para lógica más compleja usa una función registrada en <code>functions</code>.
+                      <strong>Security guaranteed:</strong> functions cannot be called,
+                      globals (<code>window</code>, <code>document</code>…) cannot be accessed,
+                      and no side effects can be produced. The DSL can only read <code>value</code> and <code>model</code>.
+                      For more complex logic, use a registered function in <code>functions</code>.
                     </div>
                   </div>
                   <pre class="pg-ref-code">{{ ref.dsl }}</pre>
@@ -456,58 +456,58 @@
 
             @case ('registered') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Funciones y validadores registrados</h3>
+                <h3 class="pg-ref-h">Registered functions and validators</h3>
                 <p class="pg-ref-lead">
-                  Cuando la lógica no cabe en el DSL — closures sobre servicios Angular, llamadas HTTP,
-                  cálculos complejos, acceso a inyectables — se registra en TypeScript mediante
-                  <code>provideJsonForms()</code> en <code>app.config.ts</code> y se referencia desde
-                  el JSON por clave de texto. Hay tres registros independientes.
+                  When logic does not fit in the DSL — closures over Angular services, HTTP calls,
+                  complex calculations, access to injectables — it is registered in TypeScript via
+                  <code>provideJsonForms()</code> in <code>app.config.ts</code> and referenced from
+                  the JSON by text key. There are three independent registries.
                 </p>
                 <div class="pg-ref-twocol">
                   <dl class="pg-ref-props">
 
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">functions — condiciones reactivas</span></dt>
+                      <dt><span class="pg-ref-cat-label">functions — reactive conditions</span></dt>
                       <dd>
-                        Funciones que controlan <code>hidden</code>, <code>disabled</code> y <code>readonly</code>.
-                        Reciben un contexto con:
+                        Functions that control <code>hidden</code>, <code>disabled</code>, and <code>readonly</code>.
+                        Receive a context with:
                         <ul class="pg-ref-sublist">
-                          <li><code>value()</code> — señal con el valor del campo actual</li>
-                          <li><code>valueAt(key)</code> — señal con el valor de otro campo por clave</li>
-                          <li><code>model()</code> — señal con el snapshot completo del modelo</li>
+                          <li><code>value()</code> — signal with the current field value</li>
+                          <li><code>valueAt(key)</code> — signal with the value of another field by key</li>
+                          <li><code>model()</code> — signal with the full model snapshot</li>
                         </ul>
-                        Deben devolver <code>true</code> para activar la condición o <code>false</code> para desactivarla.
-                        Se referencian con <code>{{ '{' }} "fn": "nombreClave" {{ '}' }}</code> en el JSON.
-                        Se reevalúan reactivamente con señales Angular cada vez que cambia el modelo.
+                        Must return <code>true</code> to activate the condition or <code>false</code> to deactivate it.
+                        Referenced with <code>{{ '{' }} "fn": "keyName" {{ '}' }}</code> in the JSON.
+                        Re-evaluated reactively with Angular signals whenever the model changes.
                       </dd>
                     </div>
 
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">validators — validación síncrona</span></dt>
+                      <dt><span class="pg-ref-cat-label">validators — synchronous validation</span></dt>
                       <dd>
-                        Validadores síncronos personalizados. Reciben el mismo contexto que las funciones.
-                        Deben devolver <code>undefined</code> si el campo es válido, o un objeto
-                        <code>{{ '{' }} kind: string, message: string {{ '}' }}</code> si no lo es. El <code>kind</code>
-                        identifica el tipo de error (útil para estilos condicionales) y <code>message</code>
-                        es el texto que ve el usuario. Se referencian con
-                        <code>{{ '{' }} "kind": "fn", "fn": "clave" {{ '}' }}</code> en el array <code>validators</code>.
+                        Custom synchronous validators. Receive the same context as functions.
+                        Must return <code>undefined</code> if the field is valid, or an object
+                        <code>{{ '{' }} kind: string, message: string {{ '}' }}</code> if not. The <code>kind</code>
+                        identifies the error type (useful for conditional styles) and <code>message</code>
+                        is the text the user sees. Referenced with
+                        <code>{{ '{' }} "kind": "fn", "fn": "key" {{ '}' }}</code> in the <code>validators</code> array.
                       </dd>
                     </div>
 
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">asyncValidators — validación asíncrona</span></dt>
+                      <dt><span class="pg-ref-cat-label">asyncValidators — asynchronous validation</span></dt>
                       <dd>
-                        Validadores asíncronos basados en el primitivo <code>resource</code> de Angular.
-                        Cada entrada define cuatro propiedades:
+                        Asynchronous validators based on Angular's <code>resource</code> primitive.
+                        Each entry defines four properties:
                         <ul class="pg-ref-sublist">
-                          <li><code>params</code> — función que extrae el valor a enviar (p.ej. el texto del campo)</li>
-                          <li><code>factory</code> — crea el resource con el loader asíncrono (fetch, HttpClient…)</li>
-                          <li><code>onSuccess</code> — interpreta el resultado y devuelve un error o <code>undefined</code></li>
-                          <li><code>onError</code> — maneja fallos de red o servidor y devuelve un error de fallback</li>
+                          <li><code>params</code> — function that extracts the value to send (e.g. the field text)</li>
+                          <li><code>factory</code> — creates the resource with the async loader (fetch, HttpClient…)</li>
+                          <li><code>onSuccess</code> — interprets the result and returns an error or <code>undefined</code></li>
+                          <li><code>onError</code> — handles network or server failures and returns a fallback error</li>
                         </ul>
-                        En el JSON se usan en el array <code>asyncValidators</code> con
-                        <code>{{ '{' }} "kind": "clave", "debounce": 400 {{ '}' }}</code>. El <code>debounce</code>
-                        retrasa la petición mientras el usuario sigue escribiendo, evitando llamadas innecesarias.
+                        In the JSON they are used in the <code>asyncValidators</code> array with
+                        <code>{{ '{' }} "kind": "key", "debounce": 400 {{ '}' }}</code>. The <code>debounce</code>
+                        delays the request while the user is still typing, avoiding unnecessary calls.
                       </dd>
                     </div>
 
@@ -523,29 +523,29 @@
     </section>
   }
 
-  <!-- ── Panel de arquitectura del sistema ── -->
+  <!-- ── System architecture panel ── -->
   @if (archOpen()) {
-    <section class="pg-ref" role="region" aria-label="Arquitectura del sistema">
+    <section class="pg-ref" role="region" aria-label="System architecture">
       <header class="pg-ref-head">
         <div class="pg-ref-heading">
           <span class="pg-ref-icon">◈</span>
           <div class="pg-ref-headtext">
-            <h2 class="pg-ref-title">Arquitectura del sistema</h2>
+            <h2 class="pg-ref-title">System architecture</h2>
             <p class="pg-ref-sub">
-              Cómo <code>signal-jsonforms</code> traduce JSON a formularios reactivos:
-              las cuatro capas del motor, el pipeline de compilación y el sistema de render agnóstico de UI.
+              How <code>signal-jsonforms</code> translates JSON into reactive forms:
+              the four engine layers, the compilation pipeline, and the UI-agnostic render system.
             </p>
           </div>
         </div>
         <button
           type="button"
           class="pg-ref-close"
-          aria-label="Cerrar arquitectura"
+          aria-label="Close architecture"
           (click)="archOpen.set(false)">✕</button>
       </header>
 
       <div class="pg-ref-body">
-        <nav class="pg-ref-tabs" role="tablist" aria-label="Secciones de arquitectura">
+        <nav class="pg-ref-tabs" role="tablist" aria-label="Architecture sections">
           @for (tab of archTabs; track tab.id) {
             <button
               type="button"
@@ -565,85 +565,85 @@
 
             @case ('overview') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Visión general</h3>
+                <h3 class="pg-ref-h">Overview</h3>
                 <p class="pg-ref-lead">
-                  Signal Forms está diseñada para estructuras tipadas en tiempo de compilación:
-                  el modelo y sus paths se conocen antes de ejecutar la app.
-                  <strong>signal-jsonforms invierte ese flujo:</strong> la forma del formulario
-                  llega en JSON en runtime. La librería actúa como intérprete — construye el modelo
-                  y la función de schema dinámicamente — sin reimplementar nada que Signal Forms ya ofrece.
+                  Signal Forms is designed for compile-time typed structures:
+                  the model and its paths are known before running the app.
+                  <strong>signal-jsonforms inverts that flow:</strong> the form shape
+                  arrives as JSON at runtime. The library acts as an interpreter — it builds the model
+                  and the schema function dynamically — without reimplementing anything Signal Forms already provides.
                 </p>
                 <dl class="pg-ref-props">
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Dirigida por datos</span></dt>
-                    <dd>La estructura, validación y comportamiento del formulario se declaran en JSON.
-                    Modificar el formulario no requiere tocar TypeScript: basta con actualizar la definición.</dd>
+                    <dt><span class="pg-ref-cat-label">Data-driven</span></dt>
+                    <dd>The form's structure, validation, and behavior are declared in JSON.
+                    Modifying a form does not require touching TypeScript: just update the definition.</dd>
                   </div>
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Agnóstica de la capa visual</span></dt>
-                    <dd>El núcleo no tiene dependencias de Material, PrimeNG ni ningún kit.
-                    La integración se hace vía <code>FieldTypeRegistry</code>: cambiar de kit de UI
-                    significa cambiar únicamente el registro, sin tocar el motor.</dd>
+                    <dt><span class="pg-ref-cat-label">UI-layer agnostic</span></dt>
+                    <dd>The core has no dependencies on Material, PrimeNG, or any kit.
+                    Integration is done via <code>FieldTypeRegistry</code>: changing the UI kit
+                    means only changing the registry, without touching the engine.</dd>
                   </div>
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Fiel a Signal Forms</span></dt>
-                    <dd>Estado, reactividad y validación los gestiona Signal Forms. La librería es
-                    un <em>intérprete</em> que traduce JSON → <code>form()</code>, no una
-                    reimplementación: delega siempre en la plataforma y aprovecha su reactividad nativa.</dd>
+                    <dt><span class="pg-ref-cat-label">Faithful to Signal Forms</span></dt>
+                    <dd>State, reactivity, and validation are managed by Signal Forms. The library is
+                    an <em>interpreter</em> that translates JSON → <code>form()</code>, not a
+                    reimplementation: it always delegates to the platform and leverages its native reactivity.</dd>
                   </div>
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Aislada del riesgo experimental</span></dt>
-                    <dd><code>&#64;angular/forms/signals</code> está marcada <code>&#64;experimental</code>
-                    y puede cambiar entre versiones. Toda llamada a su API vive detrás de una única
-                    <em>capa adaptadora</em>: si la API rompe, se arregla en un solo módulo.</dd>
+                    <dt><span class="pg-ref-cat-label">Isolated from experimental risk</span></dt>
+                    <dd><code>&#64;angular/forms/signals</code> is marked <code>&#64;experimental</code>
+                    and may change between versions. Every call to its API lives behind a single
+                    <em>adapter layer</em>: if the API breaks, it is fixed in one module.</dd>
                   </div>
                 </dl>
                 <div class="pg-ref-callout">
-                  <strong>Tensión central:</strong> Signal Forms usa paths tipados estáticos
-                  (<code>path.address.city</code>). En runtime, la librería los resuelve dinámicamente
-                  con <code>path["address"]["city"]</code> — idéntico en JavaScript — sin tipado
-                  estático dentro del motor. El tipado se recupera opcionalmente en la frontera pública
-                  mediante genéricos.
+                  <strong>Core tension:</strong> Signal Forms uses statically typed paths
+                  (<code>path.address.city</code>). At runtime, the library resolves them dynamically
+                  with <code>path["address"]["city"]</code> — identical in JavaScript — without static
+                  typing inside the engine. Typing is optionally recovered at the public boundary
+                  via generics.
                 </div>
               </article>
             }
 
             @case ('layers') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Capas del sistema</h3>
+                <h3 class="pg-ref-h">System layers</h3>
                 <p class="pg-ref-lead">
-                  Cuatro capas con fronteras claras. La regla de oro:
-                  <strong>solo la capa adaptadora importa <code>&#64;angular/forms/signals</code></strong>.
-                  El resto trabaja contra las interfaces internas de la librería.
+                  Four layers with clear boundaries. The golden rule:
+                  <strong>only the adapter layer imports <code>&#64;angular/forms/signals</code></strong>.
+                  The rest works against the library's internal interfaces.
                 </p>
                 <pre class="pg-ref-code">{{ arch.layers }}</pre>
                 <dl class="pg-ref-props" style="margin-top: 1.25rem">
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Consumidor (app)</span></dt>
-                    <dd>Define la configuración JSON del formulario y, opcionalmente, registra en
-                    <code>provideJsonForms()</code> los componentes de campo, validadores síncronos
-                    y asíncronos, y funciones para lógica condicional avanzada.</dd>
+                    <dt><span class="pg-ref-cat-label">Consumer (app)</span></dt>
+                    <dd>Defines the JSON form configuration and, optionally, registers in
+                    <code>provideJsonForms()</code> the field components, synchronous and
+                    asynchronous validators, and functions for advanced conditional logic.</dd>
                   </div>
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Capa de render</span></dt>
-                    <dd><code>&lt;jf-form&gt;</code> actúa como host. <code>FieldRenderer</code>
-                    recorre el <code>FieldNode[]</code> recursivamente e instancia dinámicamente
-                    el componente asociado a cada <code>type</code>, pasándole el nodo
-                    <code>FieldTree</code> y la configuración del campo.</dd>
+                    <dt><span class="pg-ref-cat-label">Render layer</span></dt>
+                    <dd><code>&lt;jf-form&gt;</code> acts as the host. <code>FieldRenderer</code>
+                    traverses the <code>FieldNode[]</code> recursively and dynamically instantiates
+                    the component associated with each <code>type</code>, passing it the
+                    <code>FieldTree</code> node and the field configuration.</dd>
                   </div>
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Capa de motor</span></dt>
-                    <dd>El núcleo puro: sin dependencias de UI ni de Signal Forms directamente.
-                    Comprende el <em>Parser</em> (JSON → IR), el <em>ModelBuilder</em> (IR → signal),
-                    el <em>SchemaCompiler</em> (IR → schemaFn) y los registros de expresiones,
-                    funciones y validadores.</dd>
+                    <dt><span class="pg-ref-cat-label">Engine layer</span></dt>
+                    <dd>The pure core: no UI or Signal Forms dependencies.
+                    Comprises the <em>Parser</em> (JSON → IR), the <em>ModelBuilder</em> (IR → signal),
+                    the <em>SchemaCompiler</em> (IR → schemaFn), and the expression, function,
+                    and validator registries.</dd>
                   </div>
                   <div class="pg-ref-prop">
-                    <dt><span class="pg-ref-cat-label">Capa adaptadora</span></dt>
-                    <dd>El único módulo que importa <code>&#64;angular/forms/signals</code>. Envuelve
+                    <dt><span class="pg-ref-cat-label">Adapter layer</span></dt>
+                    <dd>The only module that imports <code>&#64;angular/forms/signals</code>. Wraps
                     <code>form()</code>, <code>validate()</code>, <code>validateAsync()</code>,
-                    <code>applyWhen()</code>, <code>applyEach()</code> y todos los validadores
-                    estándar detrás de interfaces propias de la librería.</dd>
+                    <code>applyWhen()</code>, <code>applyEach()</code>, and all standard validators
+                    behind the library's own interfaces.</dd>
                   </div>
                 </dl>
               </article>
@@ -651,43 +651,43 @@
 
             @case ('engine') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Motor: de JSON a <code>form()</code></h3>
+                <h3 class="pg-ref-h">Engine: from JSON to <code>form()</code></h3>
                 <p class="pg-ref-lead">
-                  El motor transforma la definición JSON en un formulario Signal Forms activo
-                  mediante cuatro pasos en cadena. El resultado es un par
-                  <code>(model signal, FieldTree)</code> que el renderer consume y que
-                  Signal Forms mantiene reactivo.
+                  The engine transforms the JSON definition into an active Signal Forms form
+                  through four chained steps. The result is a
+                  <code>(model signal, FieldTree)</code> pair that the renderer consumes and that
+                  Signal Forms keeps reactive.
                 </p>
                 <div class="pg-ref-twocol">
                   <dl class="pg-ref-props">
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">1 · Parser / Normalizador</span></dt>
-                      <dd>Valida el JSON contra un meta-schema (Zod) y lo transforma en un array
-                      de <code>FieldNode</code> con paths absolutos calculados, defaults resueltos y
-                      validadores normalizados. Los errores de configuración se detectan aquí,
-                      antes de crear ningún formulario.</dd>
+                      <dt><span class="pg-ref-cat-label">1 · Parser / Normalizer</span></dt>
+                      <dd>Validates the JSON against a meta-schema (Zod) and transforms it into an array
+                      of <code>FieldNode</code> with calculated absolute paths, resolved defaults, and
+                      normalized validators. Configuration errors are detected here,
+                      before any form is created.</dd>
                     </div>
                     <div class="pg-ref-prop">
                       <dt><span class="pg-ref-cat-label">2 · ModelBuilder</span></dt>
-                      <dd>Recorre el <code>FieldNode[]</code> y construye el objeto modelo inicial
-                      eligiendo el valor por <code>dataType</code>: <code>""</code> para string,
-                      <code>0</code> para number, <code>false</code> para boolean. Los grupos
-                      producen objetos anidados; los arrays, listas vacías. El resultado se
-                      envuelve en <code>signal()</code>.</dd>
+                      <dd>Traverses the <code>FieldNode[]</code> and builds the initial model object,
+                      choosing the value by <code>dataType</code>: <code>""</code> for string,
+                      <code>0</code> for number, <code>false</code> for boolean. Groups
+                      produce nested objects; arrays produce empty lists. The result is
+                      wrapped in <code>signal()</code>.</dd>
                     </div>
                     <div class="pg-ref-prop">
                       <dt><span class="pg-ref-cat-label">3 · SchemaCompiler</span></dt>
-                      <dd>Genera la <code>schemaFn</code> que <code>form()</code> ejecutará.
-                      La clave técnica: en JavaScript <code>path["address"]["city"]</code> es
-                      idéntico a <code>path.address.city</code>, lo que permite resolver paths
-                      dinámicos en runtime usando el mismo árbol de Signal Forms.</dd>
+                      <dd>Generates the <code>schemaFn</code> that <code>form()</code> will execute.
+                      The key technical insight: in JavaScript <code>path["address"]["city"]</code> is
+                      identical to <code>path.address.city</code>, which allows resolving dynamic paths
+                      at runtime using the same Signal Forms tree.</dd>
                     </div>
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">4 · Ensamblado</span></dt>
-                      <dd>Llama a <code>form(model, schemaFn, {{ '{' }} injector {{ '}' }})</code>
-                      a través de la capa adaptadora. El <code>FieldTree</code> resultante se pasa
-                      al renderer; el par <code>(form, model)</code> se expone en la API pública
-                      de <code>&lt;jf-form&gt;</code>.</dd>
+                      <dt><span class="pg-ref-cat-label">4 · Assembly</span></dt>
+                      <dd>Calls <code>form(model, schemaFn, {{ '{' }} injector {{ '}' }})</code>
+                      through the adapter layer. The resulting <code>FieldTree</code> is passed
+                      to the renderer; the <code>(form, model)</code> pair is exposed in the public API
+                      of <code>&lt;jf-form&gt;</code>.</dd>
                     </div>
                   </dl>
                   <pre class="pg-ref-code">{{ arch.engine }}</pre>
@@ -697,37 +697,37 @@
 
             @case ('dsl') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Lógica híbrida: DSL + funciones registradas</h3>
+                <h3 class="pg-ref-h">Hybrid logic: DSL + registered functions</h3>
                 <p class="pg-ref-lead">
-                  La librería ofrece dos mecanismos complementarios para condiciones reactivas
-                  y validación personalizada. Se eligen según la complejidad de la lógica
-                  y si el JSON debe ser autocontenido o puede depender de TypeScript registrado.
+                  The library offers two complementary mechanisms for reactive conditions
+                  and custom validation. They are chosen based on the complexity of the logic
+                  and whether the JSON must be self-contained or may depend on registered TypeScript.
                 </p>
                 <div class="pg-ref-twocol">
                   <dl class="pg-ref-props">
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">DSL de expresiones</span></dt>
-                      <dd>Un evaluador de expresiones tipo JavaScript sin <code>eval</code>: el
-                      árbol sintáctico se parsea una vez al cargar la definición y se reevalúa
-                      con señales cada vez que cambia el modelo. Solo puede leer <code>value</code>
-                      y <code>model</code>; no puede llamar funciones ni acceder a globales.
-                      Ideal cuando el JSON debe ser 100% self-contained.</dd>
+                      <dt><span class="pg-ref-cat-label">Expression DSL</span></dt>
+                      <dd>A JavaScript-like expression evaluator without <code>eval</code>: the
+                      syntax tree is parsed once when the definition loads and re-evaluated
+                      with signals whenever the model changes. Can only read <code>value</code>
+                      and <code>model</code>; cannot call functions or access globals.
+                      Ideal when the JSON must be 100% self-contained.</dd>
                     </div>
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">Funciones registradas</span></dt>
-                      <dd>Cuando la lógica no cabe en el DSL — closures sobre servicios Angular,
-                      llamadas HTTP, cálculos complejos, acceso a inyectables — se registra en
-                      TypeScript con <code>provideJsonForms()</code> y se referencia desde el JSON
-                      por clave. El contexto recibe <code>value()</code>, <code>valueAt(key)</code>
-                      y <code>model()</code> como señales.</dd>
+                      <dt><span class="pg-ref-cat-label">Registered functions</span></dt>
+                      <dd>When logic does not fit in the DSL — closures over Angular services,
+                      HTTP calls, complex calculations, access to injectables — it is registered in
+                      TypeScript with <code>provideJsonForms()</code> and referenced from the JSON
+                      by key. The context receives <code>value()</code>, <code>valueAt(key)</code>,
+                      and <code>model()</code> as signals.</dd>
                     </div>
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">Regla: async siempre en registro</span></dt>
-                      <dd>La validación asíncrona <strong>siempre</strong> va por
-                      <code>asyncValidators</code> del registro, nunca por DSL. Un
-                      <code>validateAsync</code> necesita <code>params</code>,
-                      <code>factory</code>, <code>onSuccess</code> y <code>onError</code>
-                      — funciones TypeScript que no son serializables en JSON.</dd>
+                      <dt><span class="pg-ref-cat-label">Rule: async always in registry</span></dt>
+                      <dd>Async validation <strong>always</strong> goes through
+                      <code>asyncValidators</code> in the registry, never through the DSL. A
+                      <code>validateAsync</code> needs <code>params</code>,
+                      <code>factory</code>, <code>onSuccess</code>, and <code>onError</code>
+                      — TypeScript functions that are not serializable in JSON.</dd>
                     </div>
                   </dl>
                   <pre class="pg-ref-code">{{ arch.dsl }}</pre>
@@ -737,37 +737,37 @@
 
             @case ('renderer') {
               <article class="pg-ref-doc">
-                <h3 class="pg-ref-h">Render y componentes</h3>
+                <h3 class="pg-ref-h">Renderer and components</h3>
                 <p class="pg-ref-lead">
-                  El sistema de render es completamente agnóstico de la capa visual.
-                  El consumidor registra sus componentes de campo y la librería los instancia
-                  y conecta al <code>FieldTree</code> de Signal Forms automáticamente.
+                  The render system is completely agnostic of the visual layer.
+                  The consumer registers their field components and the library instantiates
+                  and connects them to the Signal Forms <code>FieldTree</code> automatically.
                 </p>
                 <div class="pg-ref-twocol">
                   <dl class="pg-ref-props">
                     <div class="pg-ref-prop">
                       <dt><span class="pg-ref-cat-label">FieldTypeRegistry</span></dt>
-                      <dd>Mapea cada valor de <code>type</code> (string del JSON) al componente
-                      Angular que lo renderiza. El consumidor rellena el registro en
-                      <code>provideJsonForms()</code>. La misma definición JSON renderiza con
-                      Material, PrimeNG o HTML plano cambiando solo el registro.</dd>
+                      <dd>Maps each <code>type</code> value (string from the JSON) to the Angular
+                      component that renders it. The consumer fills the registry in
+                      <code>provideJsonForms()</code>. The same JSON definition renders with
+                      Material, PrimeNG, or plain HTML by changing only the registry.</dd>
                     </div>
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">Contrato FieldComponent</span></dt>
-                      <dd>Cada componente de campo implementa dos inputs: <code>field</code>
-                      (el nodo <code>FieldTree</code> para enlazar <code>[formField]</code> y
-                      leer estado reactivo: <code>field().value()</code>,
-                      <code>field().errors()</code>, <code>field().touched()</code>…) y
-                      <code>config</code> (la configuración del campo: <code>label</code>,
+                      <dt><span class="pg-ref-cat-label">FieldComponent contract</span></dt>
+                      <dd>Each field component implements two inputs: <code>field</code>
+                      (the <code>FieldTree</code> node to bind <code>[formField]</code> and
+                      read reactive state: <code>field().value()</code>,
+                      <code>field().errors()</code>, <code>field().touched()</code>…) and
+                      <code>config</code> (the field configuration: <code>label</code>,
                       <code>props</code>, <code>type</code>…).</dd>
                     </div>
                     <div class="pg-ref-prop">
-                      <dt><span class="pg-ref-cat-label">FieldRenderer recursivo</span></dt>
-                      <dd>Componente interno que recorre el <code>FieldNode[]</code>. Para
-                      cada nodo primitivo instancia dinámicamente el componente del registro
-                      (vía <code>NgComponentOutlet</code>). Para grupos recurse; para arrays
-                      itera sobre los items con <code>&#64;for</code>. El consumidor nunca
-                      interactúa con este componente directamente.</dd>
+                      <dt><span class="pg-ref-cat-label">Recursive FieldRenderer</span></dt>
+                      <dd>Internal component that traverses the <code>FieldNode[]</code>. For
+                      each primitive node it dynamically instantiates the registry component
+                      (via <code>NgComponentOutlet</code>). For groups it recurses; for arrays
+                      it iterates over items with <code>&#64;for</code>. The consumer never
+                      interacts with this component directly.</dd>
                     </div>
                   </dl>
                   <pre class="pg-ref-code">{{ arch.renderer }}</pre>

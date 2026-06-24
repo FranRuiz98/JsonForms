@@ -1,8 +1,8 @@
 /**
- * CAPA ADAPTADORA (anti-corruption).
- * Único punto del proyecto que importa de @angular/forms/signals.
- * Aísla el resto del código del riesgo de la API @experimental: si Angular
- * cambia una firma, se arregla aquí y en ningún otro sitio.
+ * ADAPTER LAYER (anti-corruption).
+ * The only place in the project that imports from @angular/forms/signals.
+ * Isolates the rest of the code from the @experimental API risk: if Angular
+ * changes a signature, it is fixed here and nowhere else.
  */
 import {
   form, schema, apply, applyEach, applyWhen,
@@ -21,7 +21,7 @@ export const SignalForms = {
 
 export type SignalFormsApi = typeof SignalForms;
 
-// Re-export controlado de tipos y de la directiva de binding,
-// para que el resto del proyecto no importe directamente del paquete experimental.
+// Controlled re-export of types and the binding directive,
+// so that the rest of the project does not import directly from the experimental package.
 export { FormField };
 export type { FieldTree, FieldState } from '@angular/forms/signals';
