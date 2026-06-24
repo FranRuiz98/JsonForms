@@ -13,6 +13,7 @@
     "esModuleInterop": true,
     "paths": {
       "signal-jsonforms": ["./dist/signal-jsonforms"],
+      "signal-jsonforms-html": ["./dist/signal-jsonforms-html"],
       "signal-jsonforms-material": ["./dist/signal-jsonforms-material"]
     },
     "importHelpers": true,
@@ -27,11 +28,29 @@
   },
   "files": [],
   "references": [
-    { "path": "./projects/signal-jsonforms/tsconfig.lib.json" },
-    { "path": "./projects/signal-jsonforms/tsconfig.spec.json" },
-    { "path": "./projects/signal-jsonforms-material/tsconfig.lib.json" },
-    { "path": "./projects/signal-jsonforms-material/tsconfig.spec.json" },
-    { "path": "./projects/demo/tsconfig.app.json" },
-    { "path": "./projects/demo/tsconfig.spec.json" }
+    {
+      "path": "./projects/signal-jsonforms/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/signal-jsonforms/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/signal-jsonforms-material/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/signal-jsonforms-material/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/demo/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/demo/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/signal-jsonforms-html/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/signal-jsonforms-html/tsconfig.spec.json"
+    }
   ]
 }

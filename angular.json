@@ -81,9 +81,7 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": [
-              "projects/demo/src/styles.scss"
-            ]
+            "styles": ["projects/demo/src/styles.scss"]
           },
           "configurations": {
             "production": {
@@ -123,6 +121,32 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        }
+      }
+    },
+    "signal-jsonforms-html": {
+      "projectType": "library",
+      "root": "projects/signal-jsonforms-html",
+      "sourceRoot": "projects/signal-jsonforms-html/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/signal-jsonforms-html/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/signal-jsonforms-html/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/signal-jsonforms-html/tsconfig.spec.json"
+          }
         }
       }
     }

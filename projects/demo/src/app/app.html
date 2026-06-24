@@ -80,12 +80,28 @@
     <section class="pg-card">
       <header class="pg-card-head">
         <span class="pg-card-title">Preview</span>
+        <div class="pg-card-tools" role="group" aria-label="Component kit">
+          <button
+            type="button"
+            class="pg-ghost"
+            [class.active]="kit() === 'material'"
+            (click)="setKit('material')">
+            Material
+          </button>
+          <button
+            type="button"
+            class="pg-ghost"
+            [class.active]="kit() === 'html'"
+            (click)="setKit('html')">
+            Plain HTML
+          </button>
+        </div>
       </header>
 
       <div class="pg-form-body">
         @if (appliedConfig(); as cfg) {
           @for (rev of [formRev()]; track rev) {
-            <jf-form [schema]="cfg" [(model)]="data" #f="jfForm"></jf-form>
+            <jf-form [schema]="cfg" [config]="kitConfig()" [(model)]="data" #f="jfForm"></jf-form>
 
             <footer class="pg-form-foot">
               <button

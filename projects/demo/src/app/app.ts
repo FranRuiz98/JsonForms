@@ -13,8 +13,10 @@ import {
   FormConfig,
   FormHostComponent,
   JSON_FORMS_CONFIG,
+  JsonFormsConfig,
   buildSignalForm,
 } from 'signal-jsonforms';
+import { HTML_FIELD_TYPES, HtmlFieldWrapperComponent } from 'signal-jsonforms-html';
 import { EXAMPLES } from './examples';
 
 @Component({
@@ -41,6 +43,20 @@ export class App implements AfterViewInit {
   protected readonly formRev = signal(0);
   protected readonly error = signal<string | null>(null);
   protected readonly data = signal<Record<string, unknown>>({});
+
+  /** Active component kit. Material is the global default; HTML is a per-form override. */
+  protected readonly kit = signal<'material' | 'html'>('material');
+  /** undefined → inherit the global (Material) registry; object → override it for this form. */
+  protected readonly kitConfig = computed<JsonFormsConfig | undefined>(() =>
+    this.kit() === 'html'
+      ? {
+          fieldTypes: HTML_FIELD_TYPES,
+          wrappers: { default: HtmlFieldWrapperComponent },
+          defaultWrapper: 'default',
+        }
+      : undefined,
+  );
+
   protected readonly refOpen = signal(false);
   protected readonly refTab = signal<RefTab>('field');
   protected readonly archOpen = signal(false);
@@ -385,6 +401,13 @@ export class App implements AfterViewInit {
 
   protected resetData(): void {
     this.data.set({});
+    this.formRev.update((r) => r + 1);
+  }
+
+  /** Switch the component kit and re-create the form so the override takes effect. */
+  protected setKit(kit: 'material' | 'html'): void {
+    if (this.kit() === kit) return;
+    this.kit.set(kit);
     this.formRev.update((r) => r + 1);
   }
 
