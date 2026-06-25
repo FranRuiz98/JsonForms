@@ -36,10 +36,15 @@ export function buildSignalForm(
   const definition = normalizeConfig(config, { validate: opts.validate });
   const initial = buildInitialModel(definition.nodes);
 
-  const model = opts.model ?? signal<Record<string, unknown>>(initial);
-  if (opts.model && isEmpty(opts.model())) {
-    opts.model.set(initial);
+  // Reconcile the model with the schema shape: keep existing values for keys
+  // present in the new schema, fill the rest with defaults, drop stale keys.
+  // This makes rebuilding the form with a DIFFERENT schema while reusing the
+  // same model signal robust (e.g. a live JSON editor) — otherwise stale keys
+  // leave new fields without a FieldTree node.
+  if (opts.model) {
+    opts.model.set(reshapeModel(initial, opts.model()));
   }
+  const model = opts.model ?? signal<Record<string, unknown>>(initial);
 
   const schemaFn = compileSchema(definition.nodes, SignalForms, opts.registries);
 
@@ -50,6 +55,24 @@ export function buildSignalForm(
   return { form, model, definition };
 }
 
-function isEmpty(value: Record<string, unknown> | undefined | null): boolean {
-  return !value || Object.keys(value).length === 0;
+/**
+ * Returns an object with exactly `template`'s keys, reusing values from
+ * `current` where the key exists and the type is compatible. Recurses into
+ * nested objects and preserves arrays.
+ */
+function reshapeModel(template: Record<string, unknown>, current: unknown): Record<string, unknown> {
+  const cur = (current && typeof current === 'object' ? current : {}) as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  for (const key of Object.keys(template)) {
+    const t = template[key];
+    const c = cur[key];
+    if (t && typeof t === 'object' && !Array.isArray(t)) {
+      out[key] = reshapeModel(t as Record<string, unknown>, c);
+    } else if (Array.isArray(t)) {
+      out[key] = Array.isArray(c) ? c : t;
+    } else {
+      out[key] = c !== undefined && c !== null && typeof c !== 'object' ? c : t;
+    }
+  }
+  return out;
 }

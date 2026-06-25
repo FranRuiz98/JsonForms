@@ -8,10 +8,12 @@ import { FormConfig } from 'signal-jsonforms';
  *   3) dynamic logic: conditional visibility + cross-field validation (DSL)
  *   4) structure: nested groups + repeatable arrays with default values
  *   5) advanced: async validation + registered functions/validators (kind 'fn')
+ *   6) layout: column grids (layout.columns + colSpan) and collapsible sections
+ *   7) everything: layout + logic + structure + async combined (checkout)
  *
- * Levels 1–4 are 100% self-contained in JSON (do not depend on the registry). Level
- * 5 references helpers declared in `app.config.ts` (uniqueUsername, hideForNonPro,
- * passwordStrength) to show the hybrid JSON + registry model.
+ * Levels 1–4 and 6 are 100% self-contained in JSON (do not depend on the registry).
+ * Levels 5 and 7 reference helpers declared in `app.config.ts` (uniqueUsername,
+ * hideForNonPro, passwordStrength) to show the hybrid JSON + registry model.
  */
 export interface PlaygroundExample {
   id: string;
@@ -520,6 +522,300 @@ export const EXAMPLES: PlaygroundExample[] = [
           type: 'checkbox',
           dataType: 'boolean',
           label: 'I want to receive news and updates',
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 6 · Layout (columns + collapsible sections)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'profile',
+    level: 6,
+    title: 'Team profile',
+    description:
+      'Layout in the JSON: a two-column root grid, fields that span the full width with colSpan, and collapsible sections (groups) with their own internal grid. Notice how disabled/hidden conditions reach the role field from inside a section.',
+    config: {
+      version: '1',
+      id: 'profile',
+      layout: { columns: 2 },
+      fields: [
+        { key: 'firstName', type: 'text', dataType: 'string', label: 'First name', validators: [{ kind: 'required' }] },
+        { key: 'lastName', type: 'text', dataType: 'string', label: 'Last name', validators: [{ kind: 'required' }] },
+        {
+          key: 'email',
+          type: 'text',
+          dataType: 'string',
+          label: 'Email address',
+          colSpan: 2,
+          validators: [{ kind: 'required' }, { kind: 'email' }],
+        },
+        {
+          key: 'role',
+          type: 'select',
+          dataType: 'string',
+          label: 'Role',
+          defaultValue: 'member',
+          props: {
+            options: [
+              { value: 'member', label: 'Member' },
+              { value: 'manager', label: 'Manager' },
+              { value: 'admin', label: 'Admin' },
+            ],
+          },
+          validators: [{ kind: 'required' }],
+        },
+        {
+          key: 'startDate',
+          type: 'text',
+          dataType: 'string',
+          label: 'Start date',
+          props: { placeholder: 'YYYY-MM-DD', hint: 'ISO date format' },
+        },
+        {
+          key: 'address',
+          type: 'group',
+          label: 'Home address',
+          collapsible: true,
+          colSpan: 2,
+          layout: { columns: 2 },
+          fields: [
+            { key: 'street', type: 'text', dataType: 'string', label: 'Street', colSpan: 2, validators: [{ kind: 'required' }] },
+            { key: 'city', type: 'text', dataType: 'string', label: 'City', validators: [{ kind: 'required' }] },
+            {
+              key: 'zip',
+              type: 'text',
+              dataType: 'string',
+              label: 'ZIP',
+              validators: [{ kind: 'pattern', value: '^[0-9]{4,5}$', message: 'Invalid ZIP code' }],
+            },
+          ],
+        },
+        {
+          key: 'management',
+          type: 'group',
+          label: 'Management (managers & admins)',
+          collapsible: true,
+          collapsed: true,
+          colSpan: 2,
+          layout: { columns: 2 },
+          fields: [
+            {
+              key: 'teamSize',
+              type: 'number',
+              dataType: 'number',
+              label: 'Team size',
+              disabled: { expr: "model.role !== 'manager' && model.role !== 'admin'" },
+              props: { hint: 'Enabled for managers and admins' },
+            },
+            {
+              key: 'budget',
+              type: 'number',
+              dataType: 'number',
+              label: 'Budget (k€)',
+              hidden: { expr: "model.role !== 'admin'" },
+              props: { description: 'Admins only.' },
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 7 · Everything (layout + logic + structure + async)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'checkout',
+    level: 7,
+    title: 'Checkout',
+    description:
+      'The grand finale: two-column layout, collapsible sections, conditional visibility (DSL), conditional-required fields, cross-field validation, an array of order lines with a three-column item grid, and async username validation via the registry. Try "admin" as the username and switch the payment method.',
+    config: {
+      version: '1',
+      id: 'checkout',
+      layout: { columns: 2 },
+      fields: [
+        {
+          key: 'username',
+          type: 'text',
+          dataType: 'string',
+          label: 'Username',
+          colSpan: 2,
+          props: { placeholder: 'try "admin"', hint: 'Checked against the server on blur' },
+          validators: [{ kind: 'required' }],
+          asyncValidators: [{ kind: 'uniqueUsername', debounce: 400 }],
+        },
+        {
+          key: 'email',
+          type: 'text',
+          dataType: 'string',
+          label: 'Email',
+          validators: [{ kind: 'required' }, { kind: 'email' }],
+        },
+        {
+          key: 'emailConfirm',
+          type: 'text',
+          dataType: 'string',
+          label: 'Confirm email',
+          validators: [
+            { kind: 'required' },
+            { kind: 'expr', expr: 'value === model.email', message: 'Emails do not match' },
+          ],
+        },
+        {
+          key: 'shipping',
+          type: 'group',
+          label: 'Shipping address',
+          collapsible: true,
+          colSpan: 2,
+          layout: { columns: 2 },
+          fields: [
+            { key: 'fullName', type: 'text', dataType: 'string', label: 'Full name', colSpan: 2, validators: [{ kind: 'required' }] },
+            { key: 'street', type: 'text', dataType: 'string', label: 'Street', colSpan: 2, validators: [{ kind: 'required' }] },
+            { key: 'city', type: 'text', dataType: 'string', label: 'City', validators: [{ kind: 'required' }] },
+            {
+              key: 'zip',
+              type: 'text',
+              dataType: 'string',
+              label: 'ZIP',
+              validators: [{ kind: 'required' }, { kind: 'pattern', value: '^[0-9]{4,5}$', message: 'Invalid ZIP code' }],
+            },
+            {
+              key: 'country',
+              type: 'select',
+              dataType: 'string',
+              label: 'Country',
+              defaultValue: 'us',
+              props: {
+                options: [
+                  { value: 'us', label: 'United States' },
+                  { value: 'ca', label: 'Canada' },
+                  { value: 'uk', label: 'United Kingdom' },
+                ],
+              },
+              validators: [{ kind: 'required' }],
+            },
+          ],
+        },
+        {
+          key: 'sameAsShipping',
+          type: 'checkbox',
+          dataType: 'boolean',
+          label: 'Billing address same as shipping',
+          colSpan: 2,
+        },
+        {
+          key: 'billing',
+          type: 'group',
+          label: 'Billing address',
+          collapsible: true,
+          colSpan: 2,
+          layout: { columns: 2 },
+          hidden: { expr: 'model.sameAsShipping' },
+          fields: [
+            { key: 'street', type: 'text', dataType: 'string', label: 'Street', colSpan: 2 },
+            { key: 'city', type: 'text', dataType: 'string', label: 'City' },
+            {
+              key: 'zip',
+              type: 'text',
+              dataType: 'string',
+              label: 'ZIP',
+              validators: [{ kind: 'pattern', value: '^[0-9]{4,5}$', message: 'Invalid ZIP code' }],
+            },
+          ],
+        },
+        {
+          key: 'lines',
+          type: 'array',
+          label: 'Order lines',
+          colSpan: 2,
+          item: {
+            key: 'line',
+            type: 'group',
+            layout: { columns: 3 },
+            fields: [
+              {
+                key: 'product',
+                type: 'select',
+                dataType: 'string',
+                label: 'Product',
+                validators: [{ kind: 'required' }],
+                props: {
+                  options: [
+                    { value: 'book', label: 'Book' },
+                    { value: 'pen', label: 'Pen' },
+                    { value: 'mug', label: 'Mug' },
+                  ],
+                },
+              },
+              {
+                key: 'qty',
+                type: 'number',
+                dataType: 'number',
+                label: 'Qty',
+                defaultValue: 1,
+                validators: [{ kind: 'required' }, { kind: 'min', value: 1, message: 'Minimum 1' }],
+              },
+              { key: 'giftWrap', type: 'checkbox', dataType: 'boolean', label: 'Gift wrap' },
+            ],
+          },
+        },
+        {
+          key: 'payMethod',
+          type: 'select',
+          dataType: 'string',
+          label: 'Payment method',
+          defaultValue: 'card',
+          colSpan: 2,
+          props: {
+            options: [
+              { value: 'card', label: 'Credit card' },
+              { value: 'paypal', label: 'PayPal' },
+              { value: 'transfer', label: 'Bank transfer' },
+            ],
+          },
+          validators: [{ kind: 'required' }],
+        },
+        {
+          key: 'cardNumber',
+          type: 'text',
+          dataType: 'string',
+          label: 'Card number',
+          colSpan: 2,
+          props: { placeholder: '16 digits' },
+          hidden: { expr: "model.payMethod !== 'card'" },
+          validators: [
+            { kind: 'expr', expr: "model.payMethod !== 'card' || !!value", message: 'Card number is required' },
+          ],
+        },
+        {
+          key: 'paypalEmail',
+          type: 'text',
+          dataType: 'string',
+          label: 'PayPal email',
+          colSpan: 2,
+          hidden: { expr: "model.payMethod !== 'paypal'" },
+          validators: [
+            { kind: 'expr', expr: "model.payMethod !== 'paypal' || !!value", message: 'PayPal email is required' },
+          ],
+        },
+        {
+          key: 'coupon',
+          type: 'text',
+          dataType: 'string',
+          label: 'Coupon code',
+          colSpan: 2,
+          props: { hint: 'Optional' },
+        },
+        {
+          key: 'terms',
+          type: 'checkbox',
+          dataType: 'boolean',
+          label: 'I accept the terms and conditions',
+          colSpan: 2,
+          validators: [{ kind: 'required', message: 'You must accept the terms' }],
         },
       ],
     },

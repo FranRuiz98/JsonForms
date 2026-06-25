@@ -67,6 +67,7 @@ export class App implements AfterViewInit {
     { id: 'types',      icon: '▦', label: 'Field types' },
     { id: 'validators', icon: '✓', label: 'Validators' },
     { id: 'structure',  icon: '⊞', label: 'Groups and arrays' },
+    { id: 'layout',     icon: '▥', label: 'Layout & sections' },
     { id: 'dsl',        icon: 'ƒ', label: 'Expression DSL' },
     { id: 'registered', icon: '⚙', label: 'Registered functions' },
   ];
@@ -110,6 +111,11 @@ export class App implements AfterViewInit {
       '  "hidden":   { "expr": "..." }  // or  { "fn": "key" }',
       '  "disabled": { "expr": "..." }  // or  { "fn": "key" }',
       '  "readonly": { "expr": "..." }  // or  { "fn": "key" }',
+      '  "wrapper":  "key",             // wrapper from the registry',
+      '  "layout":   { "columns": 2 },  // grid for children (group / root)',
+      '  "colSpan":  2,                 // columns this field spans in a grid',
+      '  "collapsible": true,           // group only — foldable section',
+      '  "collapsed":   false,          // group only — initially folded',
       '  "fields":   [...],             // type: group only',
       '  "item":     { ... }            // type: array only',
     ].join('\n'),
@@ -181,6 +187,36 @@ export class App implements AfterViewInit {
       '    ]',
       '  }',
       '}',
+    ].join('\n'),
+
+    layout: [
+      '// ─ Column grid: on the root config or on any group ──────',
+      '{',
+      '  "layout": { "columns": 2, "gap": "0.75rem 1rem" },',
+      '  "fields": [',
+      '    { "key": "firstName", "type": "text", "label": "First name" },',
+      '    { "key": "lastName",  "type": "text", "label": "Last name"  },',
+      '    { "key": "email", "type": "text", "label": "Email",',
+      '      "colSpan": 2 },                  // spans both columns',
+      '    { "key": "city", "type": "text", "label": "City" },',
+      '    { "key": "zip",  "type": "text", "label": "ZIP"  }',
+      '  ]',
+      '}',
+      '',
+      '// ─ Collapsible section (a group with collapsible/collapsed) ─',
+      '{ "key": "billing", "type": "group", "label": "Billing",',
+      '  "collapsible": true, "collapsed": true,',
+      '  "colSpan": 2,                        // full width inside a grid',
+      '  "layout": { "columns": 2 },          // its own inner grid',
+      '  "fields": [ ... ] }',
+      '',
+      '// ─ Notes ────────────────────────────────────────────────',
+      '//  · layout.columns turns a container (root or group) into a grid.',
+      '//  · colSpan makes a field span N columns of its parent grid.',
+      '//  · gap is any CSS gap value; defaults to "0.75rem 1rem".',
+      '//  · Pure presentation: layout never changes the model or paths.',
+      '//  · Put layout on the ROOT to place top-level fields side by side',
+      '//    without nesting them into a data group.',
     ].join('\n'),
 
     registered: [
@@ -449,7 +485,7 @@ export class App implements AfterViewInit {
   }
 }
 
-type RefTab = 'field' | 'types' | 'validators' | 'structure' | 'dsl' | 'registered';
+type RefTab = 'field' | 'types' | 'validators' | 'structure' | 'layout' | 'dsl' | 'registered';
 type ArchTab = 'overview' | 'layers' | 'engine' | 'dsl' | 'renderer';
 
 function pretty(config: FormConfig): string {

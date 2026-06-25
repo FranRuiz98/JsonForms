@@ -22,6 +22,12 @@ export interface AsyncValidatorConfig {
   debounce?: number;
 }
 
+/** Configuración de rejilla para disponer hijos en columnas. */
+export interface LayoutConfig {
+  columns?: number;   // nº de columnas de la rejilla
+  gap?: string;       // separación CSS (p. ej. '0.75rem 1rem')
+}
+
 /** Campo tal cual se declara en el JSON. */
 export interface FieldConfig {
   key: string;
@@ -36,6 +42,10 @@ export interface FieldConfig {
   disabled?: DynamicExpr;
   readonly?: DynamicExpr;
   wrapper?: string;              // clave en el WrapperRegistry
+  layout?: LayoutConfig;         // rejilla para los hijos (group)
+  colSpan?: number;              // columnas que ocupa el campo en una rejilla
+  collapsible?: boolean;         // group plegable (sección)
+  collapsed?: boolean;           // estado inicial plegado
   fields?: FieldConfig[];               // type 'group'
   item?: FieldConfig;                   // type 'array'
 }
@@ -43,6 +53,7 @@ export interface FieldConfig {
 export interface FormConfig {
   version?: string;
   id?: string;
+  layout?: LayoutConfig;   // rejilla a nivel raíz (columnas para los campos de primer nivel)
   fields: FieldConfig[];
 }
 

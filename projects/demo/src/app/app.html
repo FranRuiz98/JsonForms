@@ -240,6 +240,14 @@
 
                     <div class="pg-ref-prop">
                       <dt>
+                        <code class="pg-ref-prop-key">layout · colSpan · collapsible</code>
+                        <span class="pg-ref-badge">layout</span>
+                      </dt>
+                      <dd>Presentation only — the model is unaffected. <code>layout: {{ '{' }} columns {{ '}' }}</code> arranges a container's children (the root config or a group) in a CSS grid, <code>colSpan</code> makes a field span several columns, and <code>collapsible</code> / <code>collapsed</code> turn a group into a foldable section. See the <em>Layout &amp; sections</em> tab.</dd>
+                    </div>
+
+                    <div class="pg-ref-prop">
+                      <dt>
                         <code class="pg-ref-prop-key">fields</code>
                         <span class="pg-ref-badge">group only</span>
                       </dt>
@@ -406,6 +414,44 @@
                     </div>
                   </div>
                   <pre class="pg-ref-code">{{ ref.structure }}</pre>
+                </div>
+              </article>
+            }
+
+            @case ('layout') {
+              <article class="pg-ref-doc">
+                <h3 class="pg-ref-h">Layout &amp; sections</h3>
+                <p class="pg-ref-lead">
+                  Layout is purely presentational — it never changes the model shape or the
+                  field paths. A container (the root config or any <code>group</code>) can arrange
+                  its children in a CSS grid, and groups can become collapsible sections.
+                </p>
+                <div class="pg-ref-twocol">
+                  <dl class="pg-ref-props">
+                    <div class="pg-ref-prop">
+                      <dt>
+                        <code class="pg-ref-prop-key">layout</code>
+                        <span class="pg-ref-badge">root / group</span>
+                      </dt>
+                      <dd><code>{{ '{' }} "columns": N, "gap": "css" {{ '}' }}</code>. Lays the container's direct children out in <code>N</code> equal columns. Put it on the <strong>root</strong> config to place top-level fields side by side without grouping them, or on a <code>group</code> for a section grid. <code>gap</code> is any CSS gap value (default <code>"0.75rem 1rem"</code>).</dd>
+                    </div>
+                    <div class="pg-ref-prop">
+                      <dt><code class="pg-ref-prop-key">colSpan</code></dt>
+                      <dd>Number of columns the field spans within its parent grid. Use <code>colSpan: 2</code> to make a field — or a whole section — take the full width of a two-column layout.</dd>
+                    </div>
+                    <div class="pg-ref-prop">
+                      <dt>
+                        <code class="pg-ref-prop-key">collapsible · collapsed</code>
+                        <span class="pg-ref-badge">group only</span>
+                      </dt>
+                      <dd>Turn a <code>group</code> into a foldable section: <code>collapsible: true</code> makes the header clickable and <code>collapsed: true</code> starts it folded. Sections combine with their own <code>layout</code> for nested grids.</dd>
+                    </div>
+                    <div class="pg-ref-callout">
+                      <strong>Kit-agnostic:</strong> the grid is applied with inline styles, so it
+                      works the same with the Material or the plain-HTML component kit.
+                    </div>
+                  </dl>
+                  <pre class="pg-ref-code">{{ ref.layout }}</pre>
                 </div>
               </article>
             }

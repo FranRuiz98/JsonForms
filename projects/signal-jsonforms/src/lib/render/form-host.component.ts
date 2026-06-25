@@ -39,6 +39,9 @@ class JfResolvedConfig {
  * Optional [config] input overrides the global provideJsonForms() registry for
  * THIS form's subtree (per-property merge: what you pass wins, the rest is
  * inherited). Useful to render the same JSON with a different component kit.
+ *
+ * Root-level layout: schema.layout.columns arranges the top-level fields in a
+ * CSS grid; per-field colSpan controls how many columns each one spans.
  */
 @Component({
   selector: 'jf-form',
@@ -68,9 +71,19 @@ class JfResolvedConfig {
   ],
   template: `
     @if (form(); as f) {
-      @for (node of nodes(); track node.key) {
-        <jf-field-renderer [node]="node" [field]="fieldFor(f, node)" [path]="[node.key]" />
-      }
+      <div
+        class="jf-root"
+        [style.display]="cols() ? 'grid' : null"
+        [style.gridTemplateColumns]="cols() ? 'repeat(' + cols() + ', minmax(0, 1fr))' : null"
+        [style.gap]="cols() ? gap() : null">
+        @for (node of nodes(); track node.key) {
+          <jf-field-renderer
+            [style.gridColumn]="spanFor(node)"
+            [node]="node"
+            [field]="fieldFor(f, node)"
+            [path]="[node.key]" />
+        }
+      </div>
     }
   `,
 })
@@ -110,6 +123,16 @@ export class FormHostComponent implements OnInit, JsonFormsRuntime {
 
   protected fieldFor(root: unknown, node: FieldNode): FieldTree<unknown> {
     return resolvePath(root, node.path);
+  }
+
+  // --- Root layout (columns) ---
+  protected readonly cols = computed(() => this.schema().layout?.columns ?? null);
+  protected readonly gap = computed(() => this.schema().layout?.gap ?? '0.75rem 1rem');
+
+  /** CSS grid-column span for a top-level field, or null for a single column. */
+  protected spanFor(node: FieldNode): string | null {
+    const s = node.config.colSpan;
+    return s && s > 1 ? `span ${s}` : null;
   }
 
   // --- JsonFormsRuntime: immutable model mutation for arrays ---

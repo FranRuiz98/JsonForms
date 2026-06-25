@@ -24,6 +24,11 @@ const asyncValidatorConfig = z.object({
   debounce: z.number().optional(),
 });
 
+const layoutConfig = z.object({
+  columns: z.number().int().positive().optional(),
+  gap: z.string().optional(),
+});
+
 const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
   z
     .object({
@@ -39,6 +44,10 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
       disabled: dynamicExpr.optional(),
       readonly: dynamicExpr.optional(),
       wrapper: z.string().optional(),
+      layout: layoutConfig.optional(),
+      colSpan: z.number().int().positive().optional(),
+      collapsible: z.boolean().optional(),
+      collapsed: z.boolean().optional(),
       fields: z.array(fieldConfig).optional(),
       item: fieldConfig.optional(),
     })
@@ -63,6 +72,7 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
 export const formConfigSchema = z.object({
   version: z.string().optional(),
   id: z.string().optional(),
+  layout: layoutConfig.optional(),
   fields: z.array(fieldConfig).min(1, 'the form needs at least one field.'),
 });
 

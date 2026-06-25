@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build-all": "npm run build-core && npm run build-mat-adapter && npm run build-html-adapter && npm run build-demo",
     "build-core": "ng build signal-jsonforms",
     "build-mat-adapter": "ng build signal-jsonforms-material",
     "build-html-adapter": "ng build signal-jsonforms-html",
