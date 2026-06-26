@@ -43,6 +43,7 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
       hidden: dynamicExpr.optional(),
       disabled: dynamicExpr.optional(),
       readonly: dynamicExpr.optional(),
+      computed: dynamicExpr.optional(),
       wrapper: z.string().optional(),
       layout: layoutConfig.optional(),
       colSpan: z.number().int().positive().optional(),

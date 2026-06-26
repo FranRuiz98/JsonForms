@@ -19,6 +19,10 @@ interface CompileCtx {
  * Generates the dynamic schemaFn that form() executes once. Traverses the IR
  * recursively: groups recurse, arrays use applyEach. Applies standard validators,
  * cross-field (DSL/registry), async (validateAsync), and conditional rules.
+ *
+ * Error text is resolved with the priority: the field's own `message` →
+ * `registries.messages[kind]` (centralized / i18n) → Signal Forms' built-in
+ * default. Messages support `{value}` interpolation.
  */
 export function compileSchema(
   nodes: FieldNode[],
@@ -49,6 +53,9 @@ function applyNode(node: FieldNode, p: any, cc: CompileCtx): void {
   applyConditional(cc, p, node.config.disabled, 'disabled');
   applyConditional(cc, p, node.config.readonly, 'readonly');
 
+  // Derived/computed fields are read-only (their value is written by an effect).
+  if (node.config.computed) cc.api.readonly(p);
+
   // Structure.
   if (node.kind === 'group') {
     applySchema(node.children, p, cc);
@@ -58,50 +65,72 @@ function applyNode(node: FieldNode, p: any, cc: CompileCtx): void {
   }
 }
 
+// --- Message resolution (i18n) ---
+
+/** field message > registries.messages[kind] > undefined (let Signal Forms default). */
+function resolveMessage(cc: CompileCtx, kind: string, v: ValidatorConfig): string | undefined {
+  const raw = v.message ?? cc.registries?.messages?.[kind];
+  return raw == null ? undefined : interpolate(raw, v);
+}
+
+/** Replaces {value} placeholders with the validator's value. */
+function interpolate(template: string, v: ValidatorConfig): string {
+  return template.replace(/\{value\}/g, v.value != null ? String(v.value) : '');
+}
+
+/** Fills a missing error message from registries.messages[kind] (for fn/async). */
+function fillMessage(result: ValidationResult, cc: CompileCtx): ValidationResult {
+  if (!result || result.message) return result;
+  const m = cc.registries?.messages?.[result.kind];
+  return m ? { kind: result.kind, message: m } : result;
+}
+
 // --- Synchronous validation ---
 
 function applyValidator(cc: CompileCtx, p: any, v: ValidatorConfig): void {
   if (STANDARD.has(v.kind)) {
-    applyStandardValidator(cc.api, p, v);
+    applyStandardValidator(cc, p, v);
     return;
   }
   if (v.kind === 'expr' && v.expr) {
     const compiled = compileExpression(v.expr);
+    const message = resolveMessage(cc, 'expr', v) ?? 'Invalid value';
     cc.api.validate(p, (fc: any) =>
-      compiled(exprContext(cc, fc)) ? undefined : { kind: 'expr', message: v.message ?? 'Invalid value' },
+      compiled(exprContext(cc, fc)) ? undefined : { kind: 'expr', message },
     );
     return;
   }
   if (v.kind === 'fn' && v.fn) {
     const fn = cc.registries?.validators?.[v.fn];
     if (!fn) throw new Error(`compileSchema: validator "${v.fn}" is not registered.`);
-    cc.api.validate(p, (fc: any): ValidationResult => fn(dynamicContext(cc, fc)) ?? undefined);
+    cc.api.validate(p, (fc: any): ValidationResult => fillMessage(fn(dynamicContext(cc, fc)) ?? undefined, cc));
   }
 }
 
-function applyStandardValidator(api: SignalFormsApi, path: any, v: ValidatorConfig): void {
-  const opts = v.message ? { message: v.message } : undefined;
+function applyStandardValidator(cc: CompileCtx, path: any, v: ValidatorConfig): void {
+  const message = resolveMessage(cc, v.kind, v);
+  const opts = message ? { message } : undefined;
   switch (v.kind) {
     case 'required':
-      api.required(path, opts);
+      cc.api.required(path, opts);
       break;
     case 'email':
-      api.email(path, opts);
+      cc.api.email(path, opts);
       break;
     case 'min':
-      api.min(path, Number(v.value), opts);
+      cc.api.min(path, Number(v.value), opts);
       break;
     case 'max':
-      api.max(path, Number(v.value), opts);
+      cc.api.max(path, Number(v.value), opts);
       break;
     case 'minLength':
-      api.minLength(path, Number(v.value), opts);
+      cc.api.minLength(path, Number(v.value), opts);
       break;
     case 'maxLength':
-      api.maxLength(path, Number(v.value), opts);
+      cc.api.maxLength(path, Number(v.value), opts);
       break;
     case 'pattern':
-      api.pattern(path, toRegExp(v.value), opts);
+      cc.api.pattern(path, toRegExp(v.value), opts);
       break;
   }
 }
@@ -115,8 +144,8 @@ function applyAsyncValidator(cc: CompileCtx, p: any, av: AsyncValidatorConfig): 
   (cc.api.validateAsync as any)(p, {
     params: def.params,
     factory: def.factory,
-    onSuccess: def.onSuccess,
-    onError: def.onError,
+    onSuccess: (result: unknown) => fillMessage(def.onSuccess(result), cc),
+    onError: (err: unknown) => fillMessage(def.onError(err), cc),
   });
 }
 

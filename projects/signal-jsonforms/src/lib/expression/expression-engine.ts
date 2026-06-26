@@ -7,6 +7,8 @@ import jsep from 'jsep';
 export interface ExprContext {
   value: unknown;
   model: unknown;
+  /** Whole-model root (equals `model` for top-level/group fields; the form root inside array items). */
+  root?: unknown;
 }
 export type CompiledExpr = (ctx: ExprContext) => unknown;
 
@@ -72,6 +74,8 @@ function resolveIdentifier(name: string, ctx: ExprContext): any {
       return ctx.value;
     case 'model':
       return ctx.model;
+    case 'root':
+      return ctx.root;
     case 'true':
       return true;
     case 'false':

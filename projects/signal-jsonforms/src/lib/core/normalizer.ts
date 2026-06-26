@@ -1,18 +1,22 @@
 import { DataType, FieldConfig, FieldNode, FormConfig, FormDefinition } from './model';
 import { validateConfig } from './definition-schema';
+import { Migration, migrateConfig } from './migration';
 
 export interface NormalizeOptions {
   /** Validate the definition with the zod meta-schema before normalizing (default: true). */
   validate?: boolean;
+  /** Migrations applied before validating (upgrades older definitions). */
+  migrations?: Migration[];
 }
 
 /**
  * Normalizes the JSON (FormConfig) to the IR: a FieldNode tree with absolute paths
  * and normalized validators. Supports controls, nested groups, and arrays.
- * By default validates the definition with zod first (early, clear errors).
+ * Pipeline: migrate (if any) -> validate (zod) -> build IR.
  */
 export function normalizeConfig(config: FormConfig, options?: NormalizeOptions): FormDefinition {
-  const validated = options?.validate === false ? config : validateConfig(config);
+  const migrated = options?.migrations?.length ? migrateConfig(config, options.migrations) : config;
+  const validated = options?.validate === false ? migrated : validateConfig(migrated);
   const nodes = validated.fields.map((f) => toNode(f, []));
   return { config: validated, nodes };
 }

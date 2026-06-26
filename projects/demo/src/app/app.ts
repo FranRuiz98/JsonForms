@@ -70,6 +70,7 @@ export class App implements AfterViewInit {
     { id: 'layout',     icon: '▥', label: 'Layout & sections' },
     { id: 'dsl',        icon: 'ƒ', label: 'Expression DSL' },
     { id: 'registered', icon: '⚙', label: 'Registered functions' },
+    { id: 'migration',  icon: '⇪', label: 'Migration' },
   ];
 
   protected readonly archTabs: ReadonlyArray<{ id: ArchTab; icon: string; label: string }> = [
@@ -111,6 +112,7 @@ export class App implements AfterViewInit {
       '  "hidden":   { "expr": "..." }  // or  { "fn": "key" }',
       '  "disabled": { "expr": "..." }  // or  { "fn": "key" }',
       '  "readonly": { "expr": "..." }  // or  { "fn": "key" }',
+      '  "computed": { "expr": "model.a + model.b" },  // derived, read-only',
       '  "wrapper":  "key",             // wrapper from the registry',
       '  "layout":   { "columns": 2 },  // grid for children (group / root)',
       '  "colSpan":  2,                 // columns this field spans in a grid',
@@ -142,6 +144,14 @@ export class App implements AfterViewInit {
       '',
       '// ─ Registered async: ────────────────────────────────────',
       '{ "kind": "asyncName", "debounce": 400 }',
+      '',
+      '// ─ Centralized messages (i18n) — in provideJsonForms(): ─',
+      'messages: {',
+      "  required:  'This field is required',",
+      "  email:     'Enter a valid email',",
+      "  minLength: 'At least {value} characters',  // {value} interpolated",
+      '}',
+      '// Priority:  field "message"  >  messages[kind]  >  built-in default',
     ].join('\n'),
 
     dsl: [
@@ -255,6 +265,32 @@ export class App implements AfterViewInit {
       '"hidden":  { "fn": "isAdmin" }',
       '{ "kind": "fn",        "fn": "strong" }',
       '{ "kind": "checkUser", "debounce": 400 }',
+    ].join('\n'),
+
+    migration: [
+      '// ─ Versioned definitions + migrations ───────────────────',
+      '// A definition can declare a "version". Register migrations in',
+      '// provideJsonForms() to upgrade older ones to the current format.',
+      'provideJsonForms({',
+      '  migrations: [',
+      '    { from: "0", to: "1",',
+      '      migrate: (config) => ({ ...config, /* transform */ }) },',
+      '  ],',
+      '});',
+      '// <jf-form> migrates automatically before validating, so old',
+      '// definitions keep working without touching the JSON.',
+      '',
+      '// ─ Programmatic (de)serialization ───────────────────────',
+      "import { parseForm, serializeForm, migrateConfig } from 'signal-jsonforms';",
+      '',
+      '// JSON string -> migrate -> validate (zod):',
+      'const config = parseForm(jsonString, { migrations });',
+      '',
+      '// Definition -> canonical JSON (stamps the current version):',
+      'const json = serializeForm(config);',
+      '',
+      '// Just the migration step:',
+      'const upgraded = migrateConfig(rawObject, migrations);',
     ].join('\n'),
   };
 
@@ -485,7 +521,15 @@ export class App implements AfterViewInit {
   }
 }
 
-type RefTab = 'field' | 'types' | 'validators' | 'structure' | 'layout' | 'dsl' | 'registered';
+type RefTab =
+  | 'field'
+  | 'types'
+  | 'validators'
+  | 'structure'
+  | 'layout'
+  | 'dsl'
+  | 'registered'
+  | 'migration';
 type ArchTab = 'overview' | 'layers' | 'engine' | 'dsl' | 'renderer';
 
 function pretty(config: FormConfig): string {

@@ -1,8 +1,10 @@
-import { Injector, WritableSignal, runInInjectionContext, signal } from '@angular/core';
-import { FormConfig, FormDefinition } from './core/model';
+import { Injector, WritableSignal, effect, runInInjectionContext, signal } from '@angular/core';
+import { FieldNode, FormConfig, FormDefinition } from './core/model';
 import { normalizeConfig } from './core/normalizer';
 import { buildInitialModel } from './core/model-builder';
 import { compileSchema } from './core/schema-compiler';
+import { compileExpression } from './expression/expression-engine';
+import { updateIn } from './core/path-utils';
 import { JsonFormsConfig } from './registry/types';
 import { SignalForms } from './adapter/signal-forms.adapter';
 
@@ -16,7 +18,7 @@ export interface BuildSignalFormResult {
 }
 
 export interface BuildSignalFormOptions {
-  /** Injection context required by form(). */
+  /** Injection context required by form() and computed effects. */
   injector: Injector;
   /** Model signal to use (e.g. the model() from <jf-form> for two-way binding). */
   model?: WritableSignal<Record<string, unknown>>;
@@ -27,20 +29,21 @@ export interface BuildSignalFormOptions {
 
 /**
  * Low-level API: JSON -> { form, model }.
- * Chains validateConfig (zod) -> normalize -> buildInitialModel -> compileSchema -> form().
+ * Chains validateConfig (zod) -> normalize -> buildInitialModel -> compileSchema -> form(),
+ * then wires reactive effects for derived/computed fields.
  */
 export function buildSignalForm(
   config: FormConfig,
   opts: BuildSignalFormOptions,
 ): BuildSignalFormResult {
-  const definition = normalizeConfig(config, { validate: opts.validate });
+  const definition = normalizeConfig(config, {
+    validate: opts.validate,
+    migrations: opts.registries?.migrations,
+  });
   const initial = buildInitialModel(definition.nodes);
 
   // Reconcile the model with the schema shape: keep existing values for keys
   // present in the new schema, fill the rest with defaults, drop stale keys.
-  // This makes rebuilding the form with a DIFFERENT schema while reusing the
-  // same model signal robust (e.g. a live JSON editor) — otherwise stale keys
-  // leave new fields without a FieldTree node.
   if (opts.model) {
     opts.model.set(reshapeModel(initial, opts.model()));
   }
@@ -51,6 +54,8 @@ export function buildSignalForm(
   const form = runInInjectionContext(opts.injector, () =>
     (SignalForms.form as any)(model, schemaFn),
   );
+
+  setupComputedFields(definition.nodes, model, opts.registries, opts.injector);
 
   return { form, model, definition };
 }
@@ -75,4 +80,162 @@ function reshapeModel(template: Record<string, unknown>, current: unknown): Reco
     }
   }
   return out;
+}
+
+// --- Derived / computed fields -------------------------------------------------
+
+/** Compute fn for a static field: receives the whole model. */
+type ComputeFn = (model: Record<string, unknown>) => unknown;
+/** Compute fn for an array-item field: receives the item and the whole-model root. */
+type ItemComputeFn = (item: Record<string, unknown>, root: Record<string, unknown>) => unknown;
+
+interface ItemComputed {
+  relPath: string[];
+  compute: ItemComputeFn;
+}
+
+/**
+ * Wires reactive effects for derived/computed fields:
+ * - static fields (top-level and groups): one effect each; `model` is the root.
+ * - array-item fields: one effect per array; it maps every item, computing each
+ *   field with `model` = the item and `root` = the whole model.
+ * The Object.is guard prevents write loops; chains converge across effects.
+ */
+function setupComputedFields(
+  nodes: FieldNode[],
+  model: WritableSignal<Record<string, unknown>>,
+  registries: JsonFormsConfig | undefined,
+  injector: Injector,
+): void {
+  const statics = collectComputed(nodes, registries);
+  const arrays = collectArrayComputed(nodes, registries);
+  if (statics.length === 0 && arrays.length === 0) return;
+
+  runInInjectionContext(injector, () => {
+    for (const { node, compute } of statics) {
+      effect(() => {
+        const m = model();
+        const next = compute(m);
+        if (!Object.is(plainAt(m, node.path), next)) {
+          model.update((mm) => updateIn(mm, node.path, () => next));
+        }
+      });
+    }
+
+    for (const { arrayPath, itemComputeds } of arrays) {
+      effect(() => {
+        const m = model();
+        const arr = plainAt(m, arrayPath);
+        if (!Array.isArray(arr)) return;
+        let changed = false;
+        const nextArr = arr.map((item) => {
+          let it = item as Record<string, unknown>;
+          for (const { relPath, compute } of itemComputeds) {
+            const next = compute(it, m);
+            if (!Object.is(plainAt(it, relPath), next)) {
+              it = updateIn(it, relPath, () => next);
+              changed = true;
+            }
+          }
+          return it;
+        });
+        if (changed) {
+          model.update((mm) => updateIn(mm, arrayPath, () => nextArr));
+        }
+      });
+    }
+  });
+}
+
+// --- Static computed (top-level + groups) ---
+
+function collectComputed(
+  nodes: FieldNode[],
+  registries: JsonFormsConfig | undefined,
+): Array<{ node: FieldNode; compute: ComputeFn }> {
+  const out: Array<{ node: FieldNode; compute: ComputeFn }> = [];
+  for (const n of nodes) {
+    if (n.config.computed) out.push({ node: n, compute: makeComputeFn(n, registries) });
+    if (n.kind === 'group') out.push(...collectComputed(n.children, registries));
+    // Array item templates are handled by collectArrayComputed.
+  }
+  return out;
+}
+
+function makeComputeFn(node: FieldNode, registries: JsonFormsConfig | undefined): ComputeFn {
+  const c = node.config.computed!;
+  if ('expr' in c) {
+    const compiled = compileExpression(c.expr);
+    return (m) => compiled({ value: plainAt(m, node.path), model: m, root: m });
+  }
+  const fn = registries?.functions?.[c.fn];
+  if (!fn) throw new Error(`buildSignalForm: computed function "${c.fn}" is not registered.`);
+  return (m) =>
+    fn({
+      value: () => plainAt(m, node.path),
+      model: () => m,
+      valueAt: (path: string) => plainAt(m, path.split('.')),
+      root: () => m,
+    });
+}
+
+// --- Array-item computed ---
+
+function collectArrayComputed(
+  nodes: FieldNode[],
+  registries: JsonFormsConfig | undefined,
+): Array<{ arrayPath: string[]; itemComputeds: ItemComputed[] }> {
+  const out: Array<{ arrayPath: string[]; itemComputeds: ItemComputed[] }> = [];
+  for (const n of nodes) {
+    if (n.kind === 'array' && n.item) {
+      const itemComputeds = collectItemComputed(n.item, registries);
+      if (itemComputeds.length) out.push({ arrayPath: n.path, itemComputeds });
+      // Computed fields inside arrays nested within this item are not handled.
+    }
+    if (n.kind === 'group') out.push(...collectArrayComputed(n.children, registries));
+  }
+  return out;
+}
+
+function collectItemComputed(
+  itemNode: FieldNode,
+  registries: JsonFormsConfig | undefined,
+): ItemComputed[] {
+  const out: ItemComputed[] = [];
+  const base = itemNode.path.length;
+  const visit = (n: FieldNode): void => {
+    if (n.config.computed) {
+      const relPath = n.path.slice(base);
+      out.push({ relPath, compute: makeItemComputeFn(n, registries, relPath) });
+    }
+    if (n.kind === 'group') n.children.forEach(visit);
+    // Nested arrays inside the item are not handled.
+  };
+  visit(itemNode);
+  return out;
+}
+
+function makeItemComputeFn(
+  node: FieldNode,
+  registries: JsonFormsConfig | undefined,
+  relPath: string[],
+): ItemComputeFn {
+  const c = node.config.computed!;
+  if ('expr' in c) {
+    const compiled = compileExpression(c.expr);
+    return (item, root) => compiled({ value: plainAt(item, relPath), model: item, root });
+  }
+  const fn = registries?.functions?.[c.fn];
+  if (!fn) throw new Error(`buildSignalForm: computed function "${c.fn}" is not registered.`);
+  return (item, root) =>
+    fn({
+      value: () => plainAt(item, relPath),
+      model: () => item,
+      valueAt: (path: string) => plainAt(item, path.split('.')),
+      root: () => root,
+    });
+}
+
+function plainAt(obj: any, segs: ReadonlyArray<string>): unknown {
+  return segs.reduce((o, k) => (o == null ? undefined : o[k]), obj);
 }

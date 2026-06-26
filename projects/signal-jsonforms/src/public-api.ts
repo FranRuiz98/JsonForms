@@ -5,6 +5,7 @@
 export * from './lib/core/model';
 export * from './lib/core/normalizer';
 export * from './lib/core/definition-schema';
+export * from './lib/core/migration';
 export * from './lib/core/model-builder';
 export * from './lib/core/schema-compiler';
 export * from './lib/core/path-utils';

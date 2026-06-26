@@ -41,6 +41,7 @@ export interface FieldConfig {
   hidden?: DynamicExpr;
   disabled?: DynamicExpr;
   readonly?: DynamicExpr;
+  computed?: DynamicExpr;        // valor derivado (expr/fn); el campo se vuelve readonly
   wrapper?: string;              // clave en el WrapperRegistry
   layout?: LayoutConfig;         // rejilla para los hijos (group)
   colSpan?: number;              // columnas que ocupa el campo en una rejilla

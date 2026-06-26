@@ -20,6 +20,21 @@ function passwordStrength(ctx: DynamicContext): ValidationResult {
   return undefined;
 }
 
+/**
+ * Example migration helper: v0 definitions used "title" instead of "label".
+ * Recursively renames title -> label across fields, groups, and array items.
+ */
+function renameTitleToLabel(fields: any[]): any[] {
+  return (fields ?? []).map((f) => {
+    const { title, ...rest } = f;
+    const out: any = { ...rest };
+    if (title !== undefined && out.label === undefined) out.label = title;
+    if (out.fields) out.fields = renameTitleToLabel(out.fields);
+    if (out.item) out.item = renameTitleToLabel([out.item])[0];
+    return out;
+  });
+}
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
@@ -29,9 +44,25 @@ export const appConfig: ApplicationConfig = {
       // Default wrapper: adds description/hint and the "Checking…" indicator.
       wrappers: { default: JfFieldWrapperComponent },
       defaultWrapper: 'default',
-      // Complex conditional logic referenced by key.
+      // Centralized error messages by validator kind (i18n). A field's own
+      // "message" overrides these; {value} is interpolated from the rule.
+      messages: {
+        required: 'This field is required',
+        email: 'Please enter a valid email address',
+        min: 'Must be {value} or more',
+        max: 'Must be {value} or less',
+        minLength: 'Use at least {value} characters',
+        maxLength: 'Use at most {value} characters',
+        pattern: 'Invalid format',
+      },
+      // Complex conditional logic referenced by key, and a computed aggregator.
       functions: {
         hideForNonPro: (ctx: DynamicContext) => ctx.valueAt('plan') !== 'pro',
+        // Computed grand total: sums lineTotal across the "lines" array.
+        sumLines: (ctx: DynamicContext) => {
+          const lines = (ctx.model() as { lines?: { lineTotal?: number }[] }).lines ?? [];
+          return lines.reduce((sum, line) => sum + (Number(line?.lineTotal) || 0), 0);
+        },
       },
       // Registered synchronous validators (kind 'fn').
       validators: {
@@ -54,6 +85,15 @@ export const appConfig: ApplicationConfig = {
           onError: () => ({ kind: 'error', message: 'Could not validate the username' }),
         },
       },
+      // Definition migrations: older format versions are upgraded on load.
+      migrations: [
+        {
+          from: '0',
+          to: '1',
+          // v0 used "title"; v1 uses "label".
+          migrate: (config) => ({ ...config, fields: renameTitleToLabel(config.fields) }),
+        },
+      ],
     }),
   ],
 };

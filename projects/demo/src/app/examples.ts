@@ -10,10 +10,14 @@ import { FormConfig } from 'signal-jsonforms';
  *   5) advanced: async validation + registered functions/validators (kind 'fn')
  *   6) layout: column grids (layout.columns + colSpan) and collapsible sections
  *   7) everything: layout + logic + structure + async combined (checkout)
+ *   8) computed: read-only fields derived reactively from others (DSL)
+ *   9) migration: a legacy v0 definition upgraded to the current format on load
+ *  10) array totals: per-row computed values + an aggregated grand total
  *
- * Levels 1–4 and 6 are 100% self-contained in JSON (do not depend on the registry).
- * Levels 5 and 7 reference helpers declared in `app.config.ts` (uniqueUsername,
- * hideForNonPro, passwordStrength) to show the hybrid JSON + registry model.
+ * Levels 1–4, 6 and 8 are 100% self-contained in JSON (do not depend on the registry).
+ * Levels 5, 7, 9 and 10 reference helpers/migrations declared in `app.config.ts`
+ * (uniqueUsername, hideForNonPro, passwordStrength, sumLines, the v0→v1 migration)
+ * to show the hybrid JSON + registry model.
  */
 export interface PlaygroundExample {
   id: string;
@@ -816,6 +820,203 @@ export const EXAMPLES: PlaygroundExample[] = [
           label: 'I accept the terms and conditions',
           colSpan: 2,
           validators: [{ kind: 'required', message: 'You must accept the terms' }],
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 8 · Computed (derived read-only values)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'computed',
+    level: 8,
+    title: 'Computed values',
+    description:
+      'Read-only fields whose value is derived reactively from others with the DSL. Type a name to see "Full name", and change price/quantity/tax to watch subtotal → tax → total recompute down the chain. Computed fields are automatically read-only.',
+    config: {
+      version: '1',
+      id: 'pricing',
+      layout: { columns: 2 },
+      fields: [
+        { key: 'firstName', type: 'text', dataType: 'string', label: 'First name' },
+        { key: 'lastName', type: 'text', dataType: 'string', label: 'Last name' },
+        {
+          key: 'fullName',
+          type: 'text',
+          dataType: 'string',
+          label: 'Full name (computed)',
+          colSpan: 2,
+          computed: { expr: "model.firstName + ' ' + model.lastName" },
+        },
+        {
+          key: 'unitPrice',
+          type: 'number',
+          dataType: 'number',
+          label: 'Unit price (€)',
+          defaultValue: 10,
+          validators: [{ kind: 'min', value: 0 }],
+        },
+        {
+          key: 'quantity',
+          type: 'number',
+          dataType: 'number',
+          label: 'Quantity',
+          defaultValue: 1,
+          validators: [{ kind: 'min', value: 1 }],
+        },
+        {
+          key: 'subtotal',
+          type: 'number',
+          dataType: 'number',
+          label: 'Subtotal (€)',
+          computed: { expr: 'model.unitPrice * model.quantity' },
+        },
+        {
+          key: 'taxRate',
+          type: 'number',
+          dataType: 'number',
+          label: 'Tax rate (%)',
+          defaultValue: 21,
+          validators: [{ kind: 'min', value: 0 }, { kind: 'max', value: 100 }],
+        },
+        {
+          key: 'tax',
+          type: 'number',
+          dataType: 'number',
+          label: 'Tax (€)',
+          computed: { expr: 'model.subtotal * model.taxRate / 100' },
+        },
+        {
+          key: 'total',
+          type: 'number',
+          dataType: 'number',
+          label: 'Total (€)',
+          colSpan: 2,
+          computed: { expr: 'model.subtotal + model.tax' },
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 9 · Migration (legacy v0 definition, upgraded on load)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'legacy',
+    level: 9,
+    title: 'Legacy (v0)',
+    description:
+      'A definition written for an OLDER format version: it declares "version": "0" and uses "title" instead of "label". A migration registered in app.config.ts upgrades it to the current format on load — the editor shows the original v0 JSON while the form renders correctly with labels.',
+    config: {
+      version: '0',
+      id: 'legacy-form',
+      fields: [
+        { key: 'name', type: 'text', dataType: 'string', title: 'Your name', validators: [{ kind: 'required' }] },
+        {
+          key: 'email',
+          type: 'text',
+          dataType: 'string',
+          title: 'Email',
+          validators: [{ kind: 'required' }, { kind: 'email' }],
+        },
+        {
+          key: 'role',
+          type: 'select',
+          dataType: 'string',
+          title: 'Role',
+          props: {
+            options: [
+              { value: 'dev', label: 'Developer' },
+              { value: 'pm', label: 'Manager' },
+            ],
+          },
+        },
+      ],
+    } as unknown as FormConfig,
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 10 · Array totals (per-row computed + aggregated grand total)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'invoice',
+    level: 10,
+    title: 'Invoice (array totals)',
+    description:
+      'Computed values inside array items: each order line derives its own "line total" from quantity × unit price (read-only), and the grand total — a registered function — sums every line. Add or remove lines and edit quantities to watch all totals recompute.',
+    config: {
+      version: '1',
+      id: 'invoice',
+      layout: { columns: 2 },
+      fields: [
+        {
+          key: 'customer',
+          type: 'text',
+          dataType: 'string',
+          label: 'Customer',
+          colSpan: 2,
+          validators: [{ kind: 'required' }],
+        },
+        {
+          key: 'lines',
+          type: 'array',
+          label: 'Order lines',
+          colSpan: 2,
+          item: {
+            key: 'line',
+            type: 'group',
+            layout: { columns: 4 },
+            fields: [
+              {
+                key: 'product',
+                type: 'select',
+                dataType: 'string',
+                label: 'Product',
+                validators: [{ kind: 'required' }],
+                props: {
+                  options: [
+                    { value: 'book', label: 'Book' },
+                    { value: 'pen', label: 'Pen' },
+                    { value: 'mug', label: 'Mug' },
+                  ],
+                },
+              },
+              {
+                key: 'qty',
+                type: 'number',
+                dataType: 'number',
+                label: 'Qty',
+                defaultValue: 1,
+                validators: [{ kind: 'required' }, { kind: 'min', value: 1 }],
+              },
+              {
+                key: 'unitPrice',
+                type: 'number',
+                dataType: 'number',
+                label: 'Unit price (€)',
+                defaultValue: 0,
+                validators: [{ kind: 'min', value: 0 }],
+              },
+              {
+                // per-row computed: model = the item, so qty/unitPrice are siblings.
+                key: 'lineTotal',
+                type: 'number',
+                dataType: 'number',
+                label: 'Line total (€)',
+                computed: { expr: 'model.qty * model.unitPrice' },
+              },
+            ],
+          },
+        },
+        {
+          // aggregate computed via a registered function summing lines[].lineTotal.
+          key: 'grandTotal',
+          type: 'number',
+          dataType: 'number',
+          label: 'Grand total (€)',
+          colSpan: 2,
+          computed: { fn: 'sumLines' },
         },
       ],
     },

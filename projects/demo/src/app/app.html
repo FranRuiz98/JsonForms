@@ -234,6 +234,14 @@
                     </div>
 
                     <div class="pg-ref-prop">
+                      <dt>
+                        <code class="pg-ref-prop-key">computed</code>
+                        <span class="pg-ref-badge">derived</span>
+                      </dt>
+                      <dd>Makes the field <strong>read-only</strong> and derives its value reactively from the model — with a DSL expression (<code>{{ '{' }} "expr": "model.a + model.b" {{ '}' }}</code>) or a registered function (<code>{{ '{' }} "fn": "key" {{ '}' }}</code>). It recalculates whenever its dependencies change and chains across computed fields (e.g. subtotal → tax → total). Works at the root, inside groups, and inside <strong>array items</strong> — there <code>model</code> is the current item and <code>root</code> the whole model (e.g. a per-row <code>lineTotal</code> plus an aggregated grand total).</dd>
+                    </div>
+
+                    <div class="pg-ref-prop">
                       <dt><code class="pg-ref-prop-key">validators · asyncValidators</code></dt>
                       <dd>Arrays of validation rules. Synchronous ones are evaluated on every value change and block submission on failure. Async ones support <code>debounce</code> to reduce server calls. See the <em>Validators</em> tab.</dd>
                     </div>
@@ -365,6 +373,13 @@
                       </dd>
                     </div>
 
+                    <div class="pg-ref-callout">
+                      <strong>Error text (i18n):</strong> resolved as the field's own
+                      <code>"message"</code> → <code>messages[kind]</code> declared in
+                      <code>provideJsonForms()</code> (centralized / localizable) → the engine's
+                      built-in default. <code>{{ '{' }}value{{ '}' }}</code> is interpolated from the rule.
+                    </div>
+
                   </dl>
                   <pre class="pg-ref-code">{{ ref.validators }}</pre>
                 </div>
@@ -487,6 +502,10 @@
                           <td><code>model.group.x</code></td>
                           <td>Value of field <code>x</code> inside group <code>group</code></td>
                         </tr>
+                        <tr>
+                          <td><code>root.x</code></td>
+                          <td>Whole-model root — reach outer fields from inside an array item's computed value</td>
+                        </tr>
                       </tbody>
                     </table>
 
@@ -575,6 +594,44 @@
 
                   </dl>
                   <pre class="pg-ref-code">{{ ref.registered }}</pre>
+                </div>
+              </article>
+            }
+
+            @case ('migration') {
+              <article class="pg-ref-doc">
+                <h3 class="pg-ref-h">Migration &amp; serialization</h3>
+                <p class="pg-ref-lead">
+                  Definitions are versioned. As the format evolves you register migrations that
+                  upgrade older definitions to the current version — so JSON authored long ago keeps
+                  working without edits. A small (de)serialization pipeline rounds it out.
+                </p>
+                <div class="pg-ref-twocol">
+                  <dl class="pg-ref-props">
+                    <div class="pg-ref-prop">
+                      <dt><span class="pg-ref-cat-label">migrations — provideJsonForms()</span></dt>
+                      <dd>An ordered list of <code>{{ '{' }} from, to, migrate {{ '}' }}</code> steps. <code>&lt;jf-form&gt;</code> matches the definition's <code>version</code> and applies the chain up to the current version <strong>before validating</strong>. A missing path or a cycle throws a clear error.</dd>
+                    </div>
+                    <div class="pg-ref-prop">
+                      <dt><code class="pg-ref-prop-key">parseForm(json, opts)</code></dt>
+                      <dd>Full deserialization: <code>JSON.parse</code> → migrate → validate (zod). Returns a ready <code>FormConfig</code> or throws a readable error.</dd>
+                    </div>
+                    <div class="pg-ref-prop">
+                      <dt><code class="pg-ref-prop-key">serializeForm(config)</code></dt>
+                      <dd>Serializes a definition to canonical JSON, stamping the current <code>version</code>.</dd>
+                    </div>
+                    <div class="pg-ref-prop">
+                      <dt><code class="pg-ref-prop-key">migrateConfig(raw, migrations)</code></dt>
+                      <dd>Just the migration step, without parsing or validating.</dd>
+                    </div>
+                    <div class="pg-ref-callout">
+                      <strong>Try it:</strong> load the <em>Legacy (v0)</em> example — it declares
+                      <code>"version": "0"</code> and uses <code>"title"</code> instead of
+                      <code>"label"</code>, and is upgraded on load by a migration registered in
+                      <code>app.config.ts</code>.
+                    </div>
+                  </dl>
+                  <pre class="pg-ref-code">{{ ref.migration }}</pre>
                 </div>
               </article>
             }
