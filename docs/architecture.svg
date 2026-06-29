@@ -1,0 +1,52 @@
+<svg viewBox="0 0 880 640" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" role="img" aria-label="Layered architecture of signal-jsonforms">
+  <title>signal-jsonforms — layered architecture</title>
+  <desc>Four layers from top to bottom: the consumer app, the UI-agnostic render layer, the UI-free engine (core), and the Signal Forms adapter — the only layer that imports @angular/forms/signals.</desc>
+
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="880" height="640" fill="#ffffff"/>
+
+  <!-- L1 · Consumer -->
+  <rect x="110" y="28" width="660" height="92" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="130" y="56" font-size="16" font-weight="700" fill="#1f2733">Consumer (app)</text>
+  <text x="130" y="80" font-size="13" fill="#52606d">Defines the JSON definition</text>
+  <text x="130" y="100" font-size="13" fill="#52606d">Registers field types (components), wrappers, validators, functions, option sources</text>
+
+  <line x1="440" y1="120" x2="440" y2="156" stroke="#6b7280" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="452" y="143" font-size="12" font-style="italic" fill="#6b7280">&lt;jf-form [schema]="json" [(model)]="data"&gt;</text>
+
+  <!-- L2 · Render -->
+  <rect x="110" y="158" width="660" height="104" rx="12" fill="#f4f6f9" stroke="#c7ced8" stroke-width="1.6"/>
+  <text x="130" y="186" font-size="16" font-weight="700" fill="#1f2733">Render layer · UI-agnostic</text>
+  <text x="130" y="210" font-size="13" fill="#52606d">FormHost + FieldRenderer (recursive)</text>
+  <text x="130" y="230" font-size="13" fill="#52606d">FieldTypeRegistry → resolves type → component</text>
+  <text x="130" y="250" font-size="13" fill="#52606d">WrapperRegistry → label, errors, layout · OptionsResolver feeds dynamic options</text>
+
+  <line x1="440" y1="262" x2="440" y2="298" stroke="#6b7280" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="452" y="285" font-size="12" font-style="italic" fill="#6b7280">consumes the FieldTree + normalized config</text>
+
+  <!-- L3 · Engine -->
+  <rect x="110" y="300" width="660" height="126" rx="12" fill="#f4f6f9" stroke="#c7ced8" stroke-width="1.6"/>
+  <text x="130" y="328" font-size="16" font-weight="700" fill="#1f2733">Engine layer · core (no UI)</text>
+  <text x="130" y="352" font-size="13" fill="#52606d">Parser / Normalizer: JSON → IR (FieldNode tree)</text>
+  <text x="130" y="372" font-size="13" fill="#52606d">ModelBuilder: IR → initial model → signal()</text>
+  <text x="130" y="392" font-size="13" fill="#52606d">SchemaCompiler: IR → dynamic schemaFn (Signal Forms rules)</text>
+  <text x="130" y="412" font-size="13" fill="#52606d">ExpressionEngine (DSL) · registries (validators / functions / option sources)</text>
+
+  <line x1="440" y1="426" x2="440" y2="462" stroke="#6b7280" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="452" y="449" font-size="12" font-style="italic" fill="#6b7280">isolated calls to the API</text>
+
+  <!-- L4 · Adapter -->
+  <rect x="110" y="464" width="660" height="104" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="130" y="492" font-size="16" font-weight="700" fill="#1f2733">Signal Forms adapter · anti-corruption layer</text>
+  <text x="130" y="516" font-size="13" fill="#52606d">The only file that imports @angular/forms/signals</text>
+  <text x="130" y="536" font-size="13" fill="#52606d">form(), apply(), applyEach(), applyWhen(),</text>
+  <text x="130" y="556" font-size="13" fill="#52606d">validate(), validateAsync(), required / email / min / max / pattern …</text>
+
+  <!-- footnote -->
+  <text x="110" y="600" font-size="12.5" font-style="italic" fill="#4f46e5">The golden rule: only the adapter imports @angular/forms/signals — a change to the API surface touches a single module.</text>
+</svg>
