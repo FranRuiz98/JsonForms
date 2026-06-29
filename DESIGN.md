@@ -407,4 +407,204 @@ Orden acordado (siguiendo la recomendación de subir anidamiento/arrays y visibi
 - **Validación de la definición:** sí desde **v1**, con Standard Schema/Zod (un meta-schema valida el propio JSON antes de compilar y da errores tempranos y claros).
 - **Orden de fases:** anidamiento/arrays y visibilidad condicional en **fase 1**; async en **1.5** (sección 11).
 - **Adaptador de referencia:** **Angular Material**, por ser el kit de referencia del framework. La demo se construye sobre él.
+
+---
+
+## 13. Fase 4 — Cobertura (propuesta)
+
+> Estado: borrador de diseño · pendiente de revisión antes de implementar.
+> Motivación: tras cerrar el núcleo (campos, validación, lógica dinámica, computed, layout, i18n, migración), las dos brechas más visibles frente a Formly y SurveyJS son **opciones dinámicas/async en selects** y **formularios multi-paso (wizard)**. Esta fase las cubre, más dos *quick wins* que reducen fricción real (`wrappers` apilables y `clearOnHide`).
+
+### 13.0 Principio rector heredado
+
+Se mantiene la regla de la sección 2: **el modelo es el superconjunto estable de todos los campos**, `form()` se construye una vez y lo dinámico (visibilidad, pasos, opciones) es una capa **reactiva/de render** por encima, no una reconstrucción del form. Esto vale tanto para el wizard (particiona el árbol existente; no crea modelos por paso) como para las opciones (se resuelven fuera del `SchemaCompiler`, porque Signal Forms no gestiona el catálogo de opciones de un select).
+
+---
+
+### 13.1 Opciones dinámicas y async (cascading selects)
+
+**Problema.** Hoy las opciones de un `select` viven estáticas en `props.options`. Los casos reales necesitan: opciones **derivadas** de otro campo (país → ciudad) y opciones **cargadas async** (resource/HTTP), normalmente dependientes de otro valor.
+
+**Decisión clave.** Las opciones **no son** una preocupación de validación, así que **no pasan por el `SchemaCompiler`**. Se resuelven en un servicio aparte (`JfOptionsResolver`) que produce un `Signal<OptionsState>` por campo, y el renderer lo inyecta en el componente de campo. Así Signal Forms sigue siendo la única fuente de verdad del *valor*, y las opciones son presentación reactiva.
+
+**Tipos nuevos (`core/model.ts`):**
+
+```ts
+export interface OptionItem {
+  label: string;
+  value: unknown;
+  disabled?: boolean;
+}
+
+/** Cuatro formas declarativas de poblar las opciones de un campo. */
+export type OptionsConfig =
+  | OptionItem[]                                   // estáticas, inline
+  | { expr: string }                              // derivadas (DSL): debe evaluar a OptionItem[]
+  | { fn: string }                                // derivadas (función registrada)
+  | { source: string; debounce?: number };        // async, vía registro (resource)
+
+export interface FieldConfig {
+  // …existentes…
+  options?: OptionsConfig;
+  /** Si el valor actual deja de estar entre las opciones, lo limpia (cascading). */
+  clearOnOptionsChange?: boolean;
+}
+```
+
+**Tipos nuevos (`registry/types.ts`):**
+
+```ts
+/** Fuente de opciones async; mismo patrón que AsyncValidatorDef. */
+export interface OptionSourceDef {
+  /** Entradas reactivas (p. ej. el valor de otro campo) → params de la resource. */
+  params: (ctx: DynamicContext) => unknown;
+  /** Crea la resource/recurso a partir del Signal de params. */
+  factory: (input: Signal<unknown>) => unknown;
+  /** Mapea el resultado del loader a la lista de opciones. */
+  map: (result: unknown) => OptionItem[];
+}
+
+export interface JsonFormsConfig {
+  // …existentes…
+  optionSources?: Record<string, OptionSourceDef>;
+}
+
+/** Estado reactivo que el componente de campo consume para pintar el select. */
+export interface OptionsState {
+  loading: boolean;
+  options: OptionItem[];
+  error?: unknown;
+}
+```
+
+**Contrato del componente de campo (`render/field-component.interface.ts`):**
+
+```ts
+export interface FieldComponent {
+  field: FieldTree<unknown>;
+  config: FieldConfig;
+  /** Presente solo si el campo declara `options`. Signal reactivo. */
+  options?: Signal<OptionsState>;
+}
+```
+
+**Resolución (`JfOptionsResolver`).** Por cada nodo con `options`:
+
+- `OptionItem[]` → `signal({ loading:false, options })` constante.
+- `{ expr }` / `{ fn }` → `computed()` que evalúa contra el modelo (reusa `ExpressionEngine` / `FunctionRegistry`, igual que `computed` de la fase 3). Síncrono, sin `loading`.
+- `{ source }` → busca `optionSources[source]`, llama `factory(params)` dentro del injector, opcionalmente aplica `debounce`, y expone `loading/options/error` derivados del estado del recurso. Mismo patrón mental que `validateAsync`.
+
+**Cascading + limpieza.** Cuando `clearOnOptionsChange` está activo, un `effect` observa las opciones resueltas; si el valor actual del campo no está en `options`, escribe el default en el modelo (mismo mecanismo de `updateIn` que usa `setupComputedFields`). Así país→ciudad limpia la ciudad obsoleta.
+
+**Ejemplo JSON:**
+
+```jsonc
+{ "key": "country", "type": "select", "dataType": "string",
+  "options": [ { "label": "España", "value": "es" }, { "label": "USA", "value": "us" } ] }
+
+{ "key": "city", "type": "select", "dataType": "string",
+  "clearOnOptionsChange": true,
+  "options": { "source": "citiesByCountry", "debounce": 200 } }
+```
+
+```ts
+provideJsonForms({
+  optionSources: {
+    citiesByCountry: {
+      params: (ctx) => ctx.valueAt('country'),
+      factory: (country) => resource({ params: country, loader: ({ params }) => api.cities(params) }),
+      map: (rows) => (rows as any[]).map((r) => ({ label: r.name, value: r.id })),
+    },
+  },
+});
+```
+
+---
+
+### 13.2 Formularios multi-paso (wizard)
+
+**Problema.** Onboarding, encuestas y altas largas se dividen en pasos con navegación y validación por paso. Hoy no hay forma de expresarlo.
+
+**Decisión clave.** El wizard es **capa de render**, no de motor. El modelo sigue siendo plano y el superconjunto de todos los campos de todos los pasos; `form()` se construye una vez sobre el árbol completo. Un paso es solo una **partición presentacional** de los nodos de primer nivel. La validez de un paso se **deriva** de los `FieldState` de sus campos (`field().valid()`); no hay sub-forms.
+
+**Tipos nuevos (`core/model.ts`):**
+
+```ts
+export interface StepConfig {
+  id?: string;
+  label?: string;
+  description?: string;
+  fields: FieldConfig[];
+  /** Paso omitido condicionalmente (DSL o función). */
+  skipWhen?: DynamicExpr;
+}
+
+export interface WizardConfig {
+  /** true (def.): no se avanza si el paso actual es inválido. */
+  linear?: boolean;
+  /** Muestra el stepper/encabezado por defecto. */
+  showStepper?: boolean;
+}
+
+export interface FormConfig {
+  version?: string;
+  id?: string;
+  layout?: LayoutConfig;
+  fields?: FieldConfig[];     // pasa a opcional…
+  steps?: StepConfig[];       // …excluyente con `fields`: si hay steps, manda steps
+  wizard?: WizardConfig;
+}
+```
+
+**Normalización.** El `Normalizer` aplana `steps[].fields` a la lista de `FieldNode` habitual (paths de primer nivel, sin prefijo de paso → el modelo no cambia de forma), y guarda en `FormDefinition` un mapa `stepIndex: { step: StepConfig; nodeKeys: string[] }[]`. El `SchemaCompiler` y el `ModelBuilder` ni se enteran de los pasos. La meta-validación (zod) acepta `steps` **o** `fields`, no ambos.
+
+**Componente `JfWizard` (capa render, agnóstico de kit).** Estado con señales:
+
+- `currentStep: WritableSignal<number>`, saltando los pasos cuyo `skipWhen` es cierto.
+- `stepValid(i): Signal<boolean>` = todos los campos del paso `i` válidos (derivado de los `FieldState`).
+- `next()` → si `linear` y el paso actual es inválido, marca sus campos como `touched` y no avanza; si no, pasa al siguiente paso visible. `prev()`, `goTo(i)` (en `linear`, solo a pasos ya completados).
+- `isLast`, `isFirst`, `progress` computados.
+- `submit()` se dispara desde el último paso (reusa el `submit()` async ya existente en `FormHost`).
+
+El stepper por defecto es **estructural y sin estilo** (clases `jf-step`, `jf-step-active`, `jf-step-done` para temabilidad), igual que hoy `.jf-group`/`.jf-array`. Un adaptador podría ofrecer luego uno basado en `mat-stepper`. La navegación por defecto (Prev/Next/Submit) se renderiza pero es **sustituible**: `<jf-form>` expone el estado del wizard por su `exportAs` (`#f="jfForm"` → `f.wizard`) para que el consumidor monte sus propios botones.
+
+**Ejemplo JSON:**
+
+```jsonc
+{
+  "version": "1",
+  "wizard": { "linear": true, "showStepper": true },
+  "steps": [
+    { "id": "account", "label": "Cuenta",
+      "fields": [ { "key": "email", "type": "text", "validators": [ { "kind": "required" } ] } ] },
+    { "id": "profile", "label": "Perfil",
+      "skipWhen": { "expr": "model.kind === 'guest'" },
+      "fields": [ { "key": "fullName", "type": "text" } ] }
+  ]
+}
+```
+
+---
+
+### 13.3 Quick wins
+
+**Wrappers apilables.** `wrapper?: string` pasa a `wrapper?: string | string[]`. El `FieldRenderer` los anida de fuera hacia dentro (`['card','validation']` → `card` envuelve a `validation` envuelve al campo). Retrocompatible: un string se trata como lista de uno.
+
+**`clearOnHide`.** Nuevo `FieldConfig.clearOnHide?: boolean`. Cuando la condición `hidden` del campo evalúa a cierto, un `effect` resetea su valor al default en el modelo (reusa la condición ya compilada por el `SchemaCompiler` y `updateIn`). Evita que un campo oculto contamine el `submit`. Por defecto `false` (comportamiento actual: el valor se conserva).
+
+---
+
+### 13.4 Fuera de alcance de esta fase
+
+Interop con JSON Schema estándar, selección de renderer por *tester*/ranking, hooks de ciclo de vida por campo, panel de *error summary*, y el builder visual drag-and-drop. Se valorarán en una fase posterior. **Nota transversal recomendada:** introducir `vitest` sobre el core (`ModelBuilder`, `SchemaCompiler`, `JfOptionsResolver`, normalización de `steps`) durante esta fase, para que cada feature nueva entre con tests y no como deuda — la verificación deja de depender de scripts Node manuales.
+
+### 13.5 Resumen de impacto en la API
+
+| Área | Cambio | Retrocompatible |
+|---|---|---|
+| `model.ts` | `OptionItem`, `OptionsConfig`, `FieldConfig.options`, `clearOnOptionsChange`, `clearOnHide`, `StepConfig`, `WizardConfig`, `FormConfig.steps/wizard`, `fields` opcional, `wrapper: string \| string[]` | Sí (todo aditivo / ensanchado) |
+| `registry/types.ts` | `OptionSourceDef`, `OptionsState`, `JsonFormsConfig.optionSources` | Sí |
+| `field-component.interface.ts` | `options?: Signal<OptionsState>` | Sí (opcional) |
+| `render/` | `JfWizard`, stepper por defecto, `FormHost` expone `wizard` | Sí (solo activo si hay `steps`) |
+| nuevo `core/` | `JfOptionsResolver` | Sí |
 ```

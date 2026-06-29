@@ -44,7 +44,8 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
       disabled: dynamicExpr.optional(),
       readonly: dynamicExpr.optional(),
       computed: dynamicExpr.optional(),
-      wrapper: z.string().optional(),
+      clearOnHide: z.boolean().optional(),
+      wrapper: z.union([z.string(), z.array(z.string())]).optional(),
       layout: layoutConfig.optional(),
       colSpan: z.number().int().positive().optional(),
       collapsible: z.boolean().optional(),
@@ -54,17 +55,33 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
     })
     .superRefine((field, ctx) => {
       if (field.type === 'array' && !field.item) {
-        ctx.addIssue({ code: 'custom', path: ['item'], message: 'an "array" field requires "item".' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['item'],
+          message: 'an "array" field requires "item".',
+        });
       }
       if (field.type === 'group' && !field.fields) {
-        ctx.addIssue({ code: 'custom', path: ['fields'], message: 'a "group" field requires "fields".' });
+        ctx.addIssue({
+          code: 'custom',
+          path: ['fields'],
+          message: 'a "group" field requires "fields".',
+        });
       }
       (field.validators ?? []).forEach((v, i) => {
         if (v.kind === 'expr' && !v.expr) {
-          ctx.addIssue({ code: 'custom', path: ['validators', i, 'expr'], message: 'an "expr" validator requires "expr".' });
+          ctx.addIssue({
+            code: 'custom',
+            path: ['validators', i, 'expr'],
+            message: 'an "expr" validator requires "expr".',
+          });
         }
         if (v.kind === 'fn' && !v.fn) {
-          ctx.addIssue({ code: 'custom', path: ['validators', i, 'fn'], message: 'a "fn" validator requires "fn".' });
+          ctx.addIssue({
+            code: 'custom',
+            path: ['validators', i, 'fn'],
+            message: 'a "fn" validator requires "fn".',
+          });
         }
       });
     }),

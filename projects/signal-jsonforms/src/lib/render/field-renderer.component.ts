@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Type, computed, inject, input, signal } from '@angular/core';
 import { FieldNode } from '../core/model';
 import { buildNodeValue } from '../core/model-builder';
 import { FieldTree } from '../adapter/signal-forms.adapter';
@@ -69,10 +69,8 @@ import { JSON_FORMS_RUNTIME } from './form-runtime';
           </fieldset>
         }
         @default {
-          @if (wrapper(); as w) {
-            <ng-container [ngComponentOutlet]="w" [ngComponentOutletInputs]="wrapperInputs()" />
-          } @else if (component(); as cmp) {
-            <ng-container [ngComponentOutlet]="cmp" [ngComponentOutletInputs]="inputs()" />
+          @if (rendered(); as r) {
+            <ng-container [ngComponentOutlet]="r.component" [ngComponentOutletInputs]="r.inputs" />
           } @else {
             <div class="jf-unknown">Unregistered field type: "{{ node().config.type }}"</div>
           }
@@ -98,25 +96,47 @@ export class FieldRendererComponent {
     }
   });
 
-  /** Resolved wrapper for the control (config.wrapper or defaultWrapper). */
-  protected readonly wrapper = computed(() => {
-    const key = this.node().config.wrapper ?? this.registries.defaultWrapper;
-    return key ? (this.registries.wrappers?.[key] ?? null) : null;
+  /** Wrapper keys to apply (config.wrapper or defaultWrapper), first = outermost. */
+  private readonly wrapperKeys = computed<string[]>(() => {
+    const w = this.node().config.wrapper;
+    const keys = w == null ? [] : Array.isArray(w) ? [...w] : [w];
+    if (keys.length === 0 && this.registries.defaultWrapper) keys.push(this.registries.defaultWrapper);
+    return keys;
   });
 
-  protected readonly wrapperInputs = computed(() => ({
-    node: this.node(),
-    field: this.field(),
-  }));
-
-  protected readonly component = computed(
+  private readonly control = computed(
     () => this.registries.fieldTypes?.[this.node().config.type] ?? null,
   );
 
-  protected readonly inputs = computed(() => ({
+  private readonly controlInputs = computed(() => ({
     field: this.field(),
     config: this.node().config,
   }));
+
+  /**
+   * Composes the wrapper stack around the control. Each wrapper receives the next
+   * inner component (`inner`/`innerInputs`); the innermost inner is the control.
+   * Returns the outermost component + its inputs, or null if there is no control.
+   */
+  protected readonly rendered = computed<{ component: Type<unknown>; inputs: Record<string, unknown> } | null>(() => {
+    const control = this.control();
+    if (!control) return null;
+
+    let component: Type<unknown> = control;
+    let inputs: Record<string, unknown> = this.controlInputs();
+
+    const wrappers = this.wrapperKeys()
+      .map((k) => this.registries.wrappers?.[k])
+      .filter((c): c is Type<unknown> => !!c);
+
+    // Wrap from the innermost wrapper outward so the first key ends up outermost.
+    for (let i = wrappers.length - 1; i >= 0; i--) {
+      const next = { node: this.node(), field: this.field(), inner: component, innerInputs: inputs };
+      component = wrappers[i];
+      inputs = next;
+    }
+    return { component, inputs };
+  });
 
   // --- Layout (columns) and collapsible sections ---
 

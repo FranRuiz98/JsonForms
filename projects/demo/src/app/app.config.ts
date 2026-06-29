@@ -1,5 +1,4 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, resource } from '@angular/core';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import {
   DynamicContext,
   JfFieldWrapperComponent,
@@ -7,6 +6,7 @@ import {
   ValidationResult,
 } from 'signal-jsonforms';
 import { MATERIAL_FIELD_TYPES } from 'signal-jsonforms-material';
+import { CardWrapperComponent } from './card-wrapper.component';
 
 const TAKEN_USERNAMES = ['admin', 'root', 'test'];
 
@@ -38,11 +38,12 @@ function renameTitleToLabel(fields: any[]): any[] {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideAnimationsAsync(),
     provideJsonForms({
       fieldTypes: MATERIAL_FIELD_TYPES,
       // Default wrapper: adds description/hint and the "Checking…" indicator.
-      wrappers: { default: JfFieldWrapperComponent },
+      // 'card' is a demo wrapper meant to be stacked on top of 'default'
+      // (e.g. "wrapper": ["card", "default"]) to draw a highlighted box.
+      wrappers: { default: JfFieldWrapperComponent, card: CardWrapperComponent },
       defaultWrapper: 'default',
       // Centralized error messages by validator kind (i18n). A field's own
       // "message" overrides these; {value} is interpolated from the rule.

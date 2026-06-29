@@ -13,11 +13,14 @@ import { FormConfig } from 'signal-jsonforms';
  *   8) computed: read-only fields derived reactively from others (DSL)
  *   9) migration: a legacy v0 definition upgraded to the current format on load
  *  10) array totals: per-row computed values + an aggregated grand total
+ *  11) clearOnHide + stacked wrappers: hidden fields reset their value, and a
+ *      field is wrapped by two stacked wrappers (card + default)
  *
- * Levels 1–4, 6 and 8 are 100% self-contained in JSON (do not depend on the registry).
+ * Levels 1–4, 6, 8 and 11 are 100% self-contained in JSON (do not depend on the registry).
  * Levels 5, 7, 9 and 10 reference helpers/migrations declared in `app.config.ts`
  * (uniqueUsername, hideForNonPro, passwordStrength, sumLines, the v0→v1 migration)
- * to show the hybrid JSON + registry model.
+ * to show the hybrid JSON + registry model. Level 11 uses the `card` wrapper
+ * registered there, stacked on top of `default`.
  */
 export interface PlaygroundExample {
   id: string;
@@ -1017,6 +1020,71 @@ export const EXAMPLES: PlaygroundExample[] = [
           label: 'Grand total (€)',
           colSpan: 2,
           computed: { fn: 'sumLines' },
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 11 · clearOnHide + stacked wrappers
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'job-application',
+    level: 11,
+    title: 'clearOnHide + wrappers',
+    description:
+      'Two quick wins. clearOnHide: pick an employment status, fill the field that appears, then switch status — the now-hidden value is reset to its default instead of lingering in the model (watch the model panel). Stacked wrappers: the "Cover letter" field is wrapped by ["card", "default"], so the card (outermost) draws a highlighted box and the default wrapper still adds the hint inside.',
+    config: {
+      version: '1',
+      id: 'job-application',
+      fields: [
+        {
+          key: 'status',
+          type: 'select',
+          dataType: 'string',
+          label: 'Employment status',
+          defaultValue: 'employed',
+          props: {
+            options: [
+              { value: 'employed', label: 'Employed' },
+              { value: 'student', label: 'Student' },
+              { value: 'unemployed', label: 'Unemployed' },
+            ],
+          },
+          validators: [{ kind: 'required' }],
+        },
+        {
+          // Visible only for "employed"; its value is cleared when hidden.
+          key: 'employer',
+          type: 'text',
+          dataType: 'string',
+          label: 'Current employer',
+          hidden: { expr: "model.status !== 'employed'" },
+          clearOnHide: true,
+          props: { hint: 'Cleared automatically if you change status' },
+        },
+        {
+          // Visible only for "student"; its value is cleared when hidden.
+          key: 'school',
+          type: 'text',
+          dataType: 'string',
+          label: 'School / University',
+          hidden: { expr: "model.status !== 'student'" },
+          clearOnHide: true,
+          props: { hint: 'Cleared automatically if you change status' },
+        },
+        {
+          // Stacked wrappers: card (outermost) + default (hint/description) + control.
+          key: 'coverLetter',
+          type: 'text',
+          dataType: 'string',
+          label: 'Cover letter',
+          wrapper: ['card', 'default'],
+          props: {
+            badge: 'Highlighted',
+            hint: 'Wrapped by ["card", "default"] — the badge comes from the card wrapper',
+          },
+          validators: [{ kind: 'required' }, { kind: 'minLength', value: 20 }],
         },
       ],
     },

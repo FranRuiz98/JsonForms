@@ -165,7 +165,8 @@ interface FormConfig {
   "disabled": { "expr": "..." },  // or { "fn": "key" }
   "readonly": { "expr": "..." },  // or { "fn": "key" }
   "computed": { "expr": "model.a + model.b" },  // derived, read-only
-  "wrapper":  "key",              // wrapper from the registry
+  "clearOnHide": true,            // reset value to its default when hidden
+  "wrapper":  "key",              // wrapper from the registry (or ["outer","inner"] to stack)
   "layout":   { "columns": 2 },   // grid for a group's children
   "colSpan":  2,                  // columns this field spans in a grid
   "collapsible": true,            // group only — foldable section
@@ -244,6 +245,10 @@ model changes. Each accepts a DSL expression or a registered function:
 
 A hidden field is not rendered. (Note: hidden fields still validate — keep them optional
 if they should not block submission.)
+
+Set `"clearOnHide": true` to reset a field to its default whenever it becomes hidden, so a
+stale value never reaches `submit`. The reset fires on each visible→hidden transition and
+works for controls and groups. Supported on top-level and group fields (not array items).
 
 ### Computed (derived) fields
 
@@ -502,6 +507,10 @@ provideJsonForms({
   chrome (label, error, hint, pending) because its controls are "naked" inputs.
 - A field can pick a specific wrapper with `"wrapper": "key"`; otherwise `defaultWrapper`
   applies. A wrapper component receives `node: FieldNode` and `field: FieldTree` inputs.
+- **Stacking:** `"wrapper": ["card", "validation"]` nests wrappers — the first key is the
+  outermost. To support stacking, a custom wrapper must render the threaded-in `inner`
+  component with its `innerInputs` (the next wrapper, or the control), as
+  `JfFieldWrapperComponent` does; if `inner` is absent it falls back to the control.
 
 ---
 

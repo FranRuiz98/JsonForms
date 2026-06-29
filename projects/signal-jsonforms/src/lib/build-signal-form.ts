@@ -1,7 +1,7 @@
 import { Injector, WritableSignal, effect, runInInjectionContext, signal } from '@angular/core';
 import { FieldNode, FormConfig, FormDefinition } from './core/model';
 import { normalizeConfig } from './core/normalizer';
-import { buildInitialModel } from './core/model-builder';
+import { buildInitialModel, buildNodeValue } from './core/model-builder';
 import { compileSchema } from './core/schema-compiler';
 import { compileExpression } from './expression/expression-engine';
 import { updateIn } from './core/path-utils';
@@ -56,6 +56,7 @@ export function buildSignalForm(
   );
 
   setupComputedFields(definition.nodes, model, opts.registries, opts.injector);
+  setupClearOnHide(definition.nodes, form, model, opts.injector);
 
   return { form, model, definition };
 }
@@ -238,4 +239,71 @@ function makeItemComputeFn(
 
 function plainAt(obj: any, segs: ReadonlyArray<string>): unknown {
   return segs.reduce((o, k) => (o == null ? undefined : o[k]), obj);
+}
+
+// --- clearOnHide --------------------------------------------------------------
+
+interface ClearTarget {
+  path: string[];
+  reset: unknown;
+}
+
+/**
+ * Wires effects that reset a field to its default whenever it transitions to
+ * hidden (config.clearOnHide). The hidden state is read from the compiled form
+ * tree, so it honors both DSL and registered-function conditions. Reset happens
+ * only on the visible -> hidden edge (not every tick), which also keeps group/
+ * array resets from looping on object identity. Top-level and group fields are
+ * supported; array-item fields are not.
+ */
+function setupClearOnHide(
+  nodes: FieldNode[],
+  form: unknown,
+  model: WritableSignal<Record<string, unknown>>,
+  injector: Injector,
+): void {
+  const targets = collectClearOnHide(nodes);
+  if (targets.length === 0) return;
+
+  runInInjectionContext(injector, () => {
+    for (const { path, reset } of targets) {
+      let wasHidden = false;
+      effect(() => {
+        const state = readFieldState(form, path);
+        const isHidden = !!(state && state.hidden());
+        if (isHidden && !wasHidden) {
+          model.update((m) => updateIn(m, path, () => cloneValue(reset)));
+        }
+        wasHidden = isHidden;
+      });
+    }
+  });
+}
+
+function collectClearOnHide(nodes: FieldNode[]): ClearTarget[] {
+  const out: ClearTarget[] = [];
+  for (const n of nodes) {
+    if (n.config.clearOnHide) out.push({ path: n.path, reset: buildNodeValue(n) });
+    if (n.kind === 'group') out.push(...collectClearOnHide(n.children));
+  }
+  return out;
+}
+
+/** Navigates the FieldTree by key and returns the FieldState, or null. */
+function readFieldState(form: unknown, path: ReadonlyArray<string>): any {
+  let node: any = form;
+  for (const k of path) {
+    node = node?.[k];
+    if (node == null) return null;
+  }
+  try {
+    return node();
+  } catch {
+    return null;
+  }
+}
+
+/** Deep-clones objects/arrays so each reset gets a fresh value; primitives pass through. */
+function cloneValue(v: unknown): unknown {
+  return v && typeof v === 'object' ? structuredClone(v) : v;
 }
