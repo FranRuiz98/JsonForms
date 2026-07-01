@@ -1,11 +1,12 @@
-import { Injector, WritableSignal, effect, runInInjectionContext, signal } from '@angular/core';
+import { Injector, Signal, WritableSignal, effect, runInInjectionContext, signal } from '@angular/core';
 import { FieldNode, FormConfig, FormDefinition } from './core/model';
 import { normalizeConfig } from './core/normalizer';
 import { buildInitialModel, buildNodeValue } from './core/model-builder';
 import { compileSchema } from './core/schema-compiler';
+import { setupOptions } from './core/options-resolver';
 import { compileExpression } from './expression/expression-engine';
 import { updateIn } from './core/path-utils';
-import { JsonFormsConfig } from './registry/types';
+import { JsonFormsConfig, OptionsState } from './registry/types';
 import { SignalForms } from './adapter/signal-forms.adapter';
 
 export interface BuildSignalFormResult {
@@ -15,6 +16,8 @@ export interface BuildSignalFormResult {
   model: WritableSignal<Record<string, unknown>>;
   /** Normalized IR (useful for the renderer). */
   definition: FormDefinition;
+  /** Reactive options state by field path (path.join('.')), for fields with dynamic options. */
+  options: Map<string, Signal<OptionsState>>;
 }
 
 export interface BuildSignalFormOptions {
@@ -57,8 +60,9 @@ export function buildSignalForm(
 
   setupComputedFields(definition.nodes, model, opts.registries, opts.injector);
   setupClearOnHide(definition.nodes, form, model, opts.injector);
+  const options = setupOptions(definition.nodes, model, opts.registries, opts.injector);
 
-  return { form, model, definition };
+  return { form, model, definition, options };
 }
 
 /**

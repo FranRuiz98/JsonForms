@@ -1,6 +1,7 @@
 import { Signal, Type } from '@angular/core';
 import { FieldComponent } from '../render/field-component.interface';
 import { Migration } from '../core/migration';
+import { OptionItem } from '../core/model';
 
 export type ValidationResult = { kind: string; message?: string } | undefined;
 
@@ -32,10 +33,29 @@ export interface AsyncValidatorDef {
   onError: (err: unknown) => ValidationResult;
 }
 
+/** Reactive options state a field component consumes to render a select. */
+export interface OptionsState {
+  loading: boolean;
+  options: OptionItem[];
+  error?: unknown;
+}
+
+/**
+ * Async option source (kind `{ source }`). Same shape as an async validator:
+ * `params` derives the reactive input from the model, `factory` creates the
+ * resource from that input Signal, and `map` turns the loaded result into options.
+ */
+export interface OptionSourceDef {
+  params: (ctx: DynamicContext) => unknown;
+  factory: (input: Signal<unknown>) => unknown;
+  map: (result: unknown) => OptionItem[];
+}
+
 export type FieldTypeRegistry = Record<string, Type<FieldComponent>>;
 export type WrapperRegistry = Record<string, Type<unknown>>;
 export type ValidatorRegistry = Record<string, SyncValidatorFn>;
 export type AsyncValidatorRegistry = Record<string, AsyncValidatorDef>;
+export type OptionSourceRegistry = Record<string, OptionSourceDef>;
 export type FunctionRegistry = Record<string, LogicFn>;
 
 /** Global config the consumer passes to provideJsonForms(). */
@@ -45,6 +65,7 @@ export interface JsonFormsConfig {
   defaultWrapper?: string;
   validators?: ValidatorRegistry;        // kind 'fn' in validators[]
   asyncValidators?: AsyncValidatorRegistry;
+  optionSources?: OptionSourceRegistry;  // async option sources for { source } options
   functions?: FunctionRegistry;          // hidden/disabled/readonly/computed with { fn }
   messages?: Record<string, string>;     // centralized error text by kind (i18n)
   migrations?: Migration[];              // upgrade older definitions before building

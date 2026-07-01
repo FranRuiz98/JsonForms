@@ -29,6 +29,19 @@ const layoutConfig = z.object({
   gap: z.string().optional(),
 });
 
+const optionItem = z.object({
+  value: z.unknown(),
+  label: z.string(),
+  disabled: z.boolean().optional(),
+});
+
+const optionsConfig = z.union([
+  z.array(optionItem),
+  z.object({ expr: z.string() }),
+  z.object({ fn: z.string() }),
+  z.object({ source: z.string(), debounce: z.number().optional() }),
+]);
+
 const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
   z
     .object({
@@ -44,6 +57,8 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
       disabled: dynamicExpr.optional(),
       readonly: dynamicExpr.optional(),
       computed: dynamicExpr.optional(),
+      options: optionsConfig.optional(),
+      clearOnOptionsChange: z.boolean().optional(),
       clearOnHide: z.boolean().optional(),
       wrapper: z.union([z.string(), z.array(z.string())]).optional(),
       layout: layoutConfig.optional(),

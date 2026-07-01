@@ -22,6 +22,26 @@ export interface AsyncValidatorConfig {
   debounce?: number;
 }
 
+/** Una opción de un campo de selección. */
+export interface OptionItem {
+  value: unknown;
+  label: string;
+  disabled?: boolean;
+}
+
+/**
+ * Origen de las opciones de un campo (selección):
+ * - OptionItem[]              estáticas, inline
+ * - { expr }                  derivadas del modelo (DSL); evalúa a OptionItem[]
+ * - { fn }                    derivadas (función registrada en `functions`)
+ * - { source, debounce }      async, vía `optionSources` del registro (resource)
+ */
+export type OptionsConfig =
+  | OptionItem[]
+  | { expr: string }
+  | { fn: string }
+  | { source: string; debounce?: number };
+
 /** Configuración de rejilla para disponer hijos en columnas. */
 export interface LayoutConfig {
   columns?: number;   // nº de columnas de la rejilla
@@ -42,6 +62,8 @@ export interface FieldConfig {
   disabled?: DynamicExpr;
   readonly?: DynamicExpr;
   computed?: DynamicExpr;        // valor derivado (expr/fn); el campo se vuelve readonly
+  options?: OptionsConfig;       // opciones dinámicas/async (select); las estáticas también valen en props.options
+  clearOnOptionsChange?: boolean;// si el valor deja de estar entre las opciones, lo resetea (cascading)
   clearOnHide?: boolean;         // al ocultarse (hidden=true) resetea su valor al default
   wrapper?: string | string[];   // clave(s) en el WrapperRegistry; varias se apilan (la 1ª es la más externa)
   layout?: LayoutConfig;         // rejilla para los hijos (group)

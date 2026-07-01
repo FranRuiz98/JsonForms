@@ -15,11 +15,13 @@ import { FormConfig } from 'signal-jsonforms';
  *  10) array totals: per-row computed values + an aggregated grand total
  *  11) clearOnHide + stacked wrappers: hidden fields reset their value, and a
  *      field is wrapped by two stacked wrappers (card + default)
+ *  12) cascading options: a city select whose options load async from the server
+ *      based on the chosen country, clearing itself when the country changes
  *
  * Levels 1–4, 6, 8 and 11 are 100% self-contained in JSON (do not depend on the registry).
- * Levels 5, 7, 9 and 10 reference helpers/migrations declared in `app.config.ts`
- * (uniqueUsername, hideForNonPro, passwordStrength, sumLines, the v0→v1 migration)
- * to show the hybrid JSON + registry model. Level 11 uses the `card` wrapper
+ * Levels 5, 7, 9, 10 and 12 reference helpers/migrations/sources declared in `app.config.ts`
+ * (uniqueUsername, hideForNonPro, passwordStrength, sumLines, citiesByCountry, the v0→v1
+ * migration) to show the hybrid JSON + registry model. Level 11 uses the `card` wrapper
  * registered there, stacked on top of `default`.
  */
 export interface PlaygroundExample {
@@ -1085,6 +1087,47 @@ export const EXAMPLES: PlaygroundExample[] = [
             hint: 'Wrapped by ["card", "default"] — the badge comes from the card wrapper',
           },
           validators: [{ kind: 'required' }, { kind: 'minLength', value: 20 }],
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 12 · Cascading options (async, via optionSources)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'cascading',
+    level: 12,
+    title: 'Cascading options',
+    description:
+      'Dynamic options. The "Country" select uses an inline options list; "City" loads its options asynchronously from the server (≈500 ms, "Loading…" shown) via the citiesByCountry source registered in app.config.ts, keyed off the chosen country. With clearOnOptionsChange, switching country resets a now-invalid city. Try: pick Spain, choose Madrid, then switch to France — the city clears.',
+    config: {
+      version: '1',
+      id: 'cascading',
+      fields: [
+        {
+          key: 'country',
+          type: 'select',
+          dataType: 'string',
+          label: 'Country',
+          // New inline `options` form (equivalent to props.options).
+          options: [
+            { value: 'es', label: 'Spain' },
+            { value: 'us', label: 'United States' },
+            { value: 'fr', label: 'France' },
+          ],
+          validators: [{ kind: 'required' }],
+        },
+        {
+          key: 'city',
+          type: 'select',
+          dataType: 'string',
+          label: 'City',
+          // Async options loaded from the registered source, debounced.
+          options: { source: 'citiesByCountry', debounce: 200 },
+          clearOnOptionsChange: true,
+          props: { hint: 'Loaded from the server based on the country' },
+          validators: [{ kind: 'required' }],
         },
       ],
     },

@@ -5,6 +5,7 @@ import {
   Injector,
   OnInit,
   Optional,
+  Signal,
   SkipSelf,
   WritableSignal,
   computed,
@@ -23,6 +24,7 @@ import { buildSignalForm } from '../build-signal-form';
 import { resolvePath } from '../core/schema-compiler';
 import { FieldTree, SignalForms } from '../adapter/signal-forms.adapter';
 import { FieldRendererComponent } from './field-renderer.component';
+import { OptionsState } from '../registry/types';
 import { JSON_FORMS_RUNTIME, JsonFormsRuntime } from './form-runtime';
 
 /** Per-form holder for the resolved (override) config. */
@@ -101,6 +103,9 @@ export class FormHostComponent implements OnInit, JsonFormsRuntime {
   readonly form = signal<FieldTree<unknown> | null>(null);
   readonly nodes = signal<FieldNode[]>([]);
 
+  /** Reactive options by field path, populated when the form is built. */
+  private optionsByPath = new Map<string, Signal<OptionsState>>();
+
   /** Validity state of the entire form (true while not yet built). */
   readonly invalid = computed(() => {
     const f = this.form();
@@ -112,11 +117,12 @@ export class FormHostComponent implements OnInit, JsonFormsRuntime {
     // (compileSchema + child renderers) sees the merged registry.
     this.resolved.value = this.config() ?? {};
 
-    const { form, definition } = buildSignalForm(this.schema(), {
+    const { form, definition, options } = buildSignalForm(this.schema(), {
       injector: this.injector,
       model: this.model as WritableSignal<Record<string, unknown>>,
       registries: this.registries,
     });
+    this.optionsByPath = options;
     this.nodes.set(definition.nodes);
     this.form.set(form as FieldTree<unknown>);
   }
@@ -144,6 +150,11 @@ export class FormHostComponent implements OnInit, JsonFormsRuntime {
     this.model.update((m) =>
       updateIn(m, path, (arr) => (arr as unknown[]).filter((_, i) => i !== index)),
     );
+  }
+
+  /** Reactive options for a field path, or null if it has no dynamic options. */
+  optionsFor(path: ReadonlyArray<string | number>): Signal<OptionsState> | null {
+    return this.optionsByPath.get(path.join('.')) ?? null;
   }
 
   /** Marks everything as touched and executes the action if the form is valid. */

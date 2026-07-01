@@ -108,9 +108,16 @@ export class FieldRendererComponent {
     () => this.registries.fieldTypes?.[this.node().config.type] ?? null,
   );
 
+  /** Reactive options for this field, when it declares dynamic options. */
+  private readonly optionsState = computed(() => {
+    const sig = this.runtime.optionsFor(this.path());
+    return sig ? sig() : undefined;
+  });
+
   private readonly controlInputs = computed(() => ({
     field: this.field(),
     config: this.node().config,
+    options: this.optionsState(),
   }));
 
   /**

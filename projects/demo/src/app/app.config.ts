@@ -86,6 +86,30 @@ export const appConfig: ApplicationConfig = {
           onError: () => ({ kind: 'error', message: 'Could not validate the username' }),
         },
       },
+      // Async option sources (kind { source }): not serializable in JSON. Same
+      // shape as an async validator — params derives the input from the model,
+      // factory builds the resource, map turns the result into options.
+      optionSources: {
+        // Cities depend on the selected country; simulates a server lookup.
+        citiesByCountry: {
+          params: (ctx) => ctx.valueAt('country'),
+          factory: (country) =>
+            resource({
+              params: country,
+              loader: async ({ params }) => {
+                await new Promise((r) => setTimeout(r, 500));
+                const db: Record<string, string[]> = {
+                  es: ['Madrid', 'Barcelona', 'Valencia', 'Seville'],
+                  us: ['New York', 'Los Angeles', 'Chicago', 'Austin'],
+                  fr: ['Paris', 'Lyon', 'Marseille', 'Toulouse'],
+                };
+                return db[String(params ?? '')] ?? [];
+              },
+            }),
+          map: (rows) =>
+            (rows as string[]).map((c) => ({ value: c.toLowerCase().replace(/\s+/g, '-'), label: c })),
+        },
+      },
       // Definition migrations: older format versions are upgraded on load.
       migrations: [
         {

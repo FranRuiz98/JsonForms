@@ -1,9 +1,14 @@
 import { Component, computed, input } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { FieldComponent, FieldConfig, FieldTree, FormField } from 'signal-jsonforms';
-
-interface Option { value: string; label: string; }
+import {
+  FieldComponent,
+  FieldConfig,
+  FieldTree,
+  FormField,
+  OptionItem,
+  OptionsState,
+} from 'signal-jsonforms';
 
 @Component({
   selector: 'jf-mat-select-field',
@@ -13,10 +18,13 @@ interface Option { value: string; label: string; }
     <mat-form-field appearance="outline" class="jf-field">
       <mat-label>{{ config().label }}</mat-label>
       <mat-select [formField]="$any(field())">
-        @for (opt of options(); track opt.value) {
-          <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+        @for (opt of opts(); track opt.value) {
+          <mat-option [value]="opt.value" [disabled]="opt.disabled ?? false">{{ opt.label }}</mat-option>
         }
       </mat-select>
+      @if (loading()) {
+        <mat-hint>Loading…</mat-hint>
+      }
       @if (state().touched() && state().errors().length) {
         <mat-error>{{ state().errors()[0].message }}</mat-error>
       }
@@ -26,8 +34,17 @@ interface Option { value: string; label: string; }
 export class MatSelectFieldComponent implements FieldComponent {
   readonly field = input.required<FieldTree<unknown>>();
   readonly config = input.required<FieldConfig>();
+  /** Reactive options injected by the renderer for fields with dynamic options. */
+  readonly options = input<OptionsState | undefined>(undefined);
+
   protected readonly state = computed(() => (this.field() as any)());
-  protected readonly options = computed(
-    () => (this.config().props?.['options'] as Option[]) ?? [],
-  );
+
+  /** Prefer the reactive options; fall back to static props.options. */
+  protected readonly opts = computed<OptionItem[]>(() => {
+    const dynamic = this.options();
+    if (dynamic) return dynamic.options;
+    return (this.config().props?.['options'] as OptionItem[]) ?? [];
+  });
+
+  protected readonly loading = computed(() => !!this.options()?.loading);
 }

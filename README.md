@@ -165,6 +165,8 @@ interface FormConfig {
   "disabled": { "expr": "..." },  // or { "fn": "key" }
   "readonly": { "expr": "..." },  // or { "fn": "key" }
   "computed": { "expr": "model.a + model.b" },  // derived, read-only
+  "options":  { "source": "key", "debounce": 200 },  // dynamic/async select options (see below)
+  "clearOnOptionsChange": true,   // reset value when it leaves the resolved options
   "clearOnHide": true,            // reset value to its default when hidden
   "wrapper":  "key",              // wrapper from the registry (or ["outer","inner"] to stack)
   "layout":   { "columns": 2 },   // grid for a group's children
@@ -245,6 +247,40 @@ model changes. Each accepts a DSL expression or a registered function:
 
 A hidden field is not rendered. (Note: hidden fields still validate — keep them optional
 if they should not block submission.)
+
+### Dynamic & async options
+
+A select's options can be static or resolved reactively. Four forms of the `options` field:
+
+```jsonc
+"options": [ { "value": "es", "label": "Spain" } ]          // static inline
+"options": { "expr": "model.kind === 'eu' ? euList : usList" } // derived from the model (DSL)
+"options": { "fn": "optionsForRole" }                          // derived from a registered function
+"options": { "source": "citiesByCountry", "debounce": 200 }    // async via optionSources (a resource)
+```
+
+Options are presentation, not validation, so they live outside Signal Forms: the model
+stays the single source of truth for the value. An async `source` is registered like an
+async validator — `params` derives the reactive input from the model, `factory` builds the
+`resource`, and `map` turns the loaded result into `{ value, label }[]`:
+
+```ts
+provideJsonForms({
+  optionSources: {
+    citiesByCountry: {
+      params: (ctx) => ctx.valueAt('country'),
+      factory: (country) => resource({ params: country, loader: ({ params }) => api.cities(params) }),
+      map: (rows) => rows.map((r) => ({ value: r.id, label: r.name })),
+    },
+  },
+});
+```
+
+Add `"clearOnOptionsChange": true` for cascading selects: when the current value is no
+longer among the resolved options (e.g. the country changed), it resets to its default.
+Field components receive a reactive `options` input (`{ loading, options, error }`) and
+should prefer it over `props.options`. Dynamic options are supported on top-level and group
+fields (not array items); static inline arrays still work everywhere.
 
 Set `"clearOnHide": true` to reset a field to its default whenever it becomes hidden, so a
 stale value never reaches `submit`. The reset fires on each visible→hidden transition and
