@@ -17,6 +17,7 @@ import { FormConfig } from 'signal-jsonforms';
  *      field is wrapped by two stacked wrappers (card + default)
  *  12) cascading options: a city select whose options load async from the server
  *      based on the chosen country, clearing itself when the country changes
+ *  13) wizard: a linear multi-step form with a conditionally skipped step
  *
  * Levels 1–4, 6, 8 and 11 are 100% self-contained in JSON (do not depend on the registry).
  * Levels 5, 7, 9, 10 and 12 reference helpers/migrations/sources declared in `app.config.ts`
@@ -1128,6 +1129,139 @@ export const EXAMPLES: PlaygroundExample[] = [
           clearOnOptionsChange: true,
           props: { hint: 'Loaded from the server based on the country' },
           validators: [{ kind: 'required' }],
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 13 · Wizard (multi-step)
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'signup-wizard',
+    level: 13,
+    title: 'Wizard (multi-step)',
+    description:
+      'A linear multi-step form. The model stays flat and form() is built once — each step just shows a subset of the fields, and validity is derived per step. Next is blocked until the current step is valid (click Next on an empty step to see the hint). The "Company" step is skipped unless you choose a Business account (skipWhen). Navigate with the stepper or Back/Next; Submit fires on the last step.',
+    config: {
+      version: '1',
+      id: 'signup-wizard',
+      wizard: { linear: true, showStepper: true },
+      layout: { columns: 2 },
+      steps: [
+        {
+          id: 'account',
+          label: 'Account',
+          description: 'Your login credentials.',
+          fields: [
+            {
+              key: 'email',
+              type: 'text',
+              dataType: 'string',
+              label: 'Email',
+              colSpan: 2,
+              validators: [{ kind: 'required' }, { kind: 'email' }],
+            },
+            {
+              key: 'password',
+              type: 'text',
+              dataType: 'string',
+              label: 'Password',
+              validators: [{ kind: 'required' }, { kind: 'minLength', value: 8, message: 'Minimum 8 characters' }],
+            },
+            {
+              key: 'confirm',
+              type: 'text',
+              dataType: 'string',
+              label: 'Confirm password',
+              validators: [
+                { kind: 'required' },
+                { kind: 'expr', expr: 'value === model.password', message: 'Passwords do not match' },
+              ],
+            },
+          ],
+        },
+        {
+          id: 'profile',
+          label: 'Profile',
+          description: 'Tell us who you are.',
+          fields: [
+            {
+              key: 'fullName',
+              type: 'text',
+              dataType: 'string',
+              label: 'Full name',
+              colSpan: 2,
+              validators: [{ kind: 'required' }],
+            },
+            {
+              key: 'accountType',
+              type: 'select',
+              dataType: 'string',
+              label: 'Account type',
+              defaultValue: 'personal',
+              props: {
+                options: [
+                  { value: 'personal', label: 'Personal' },
+                  { value: 'business', label: 'Business' },
+                ],
+              },
+              validators: [{ kind: 'required' }],
+            },
+            {
+              key: 'country',
+              type: 'select',
+              dataType: 'string',
+              label: 'Country',
+              props: {
+                options: [
+                  { value: 'es', label: 'Spain' },
+                  { value: 'us', label: 'United States' },
+                  { value: 'fr', label: 'France' },
+                ],
+              },
+              validators: [{ kind: 'required' }],
+            },
+          ],
+        },
+        {
+          id: 'company',
+          label: 'Company',
+          description: 'Business accounts only — skipped for personal ones.',
+          // Conditionally skipped step (DSL).
+          skipWhen: { expr: "model.accountType !== 'business'" },
+          fields: [
+            {
+              key: 'companyName',
+              type: 'text',
+              dataType: 'string',
+              label: 'Company name',
+              colSpan: 2,
+              validators: [{ kind: 'required' }],
+            },
+            {
+              key: 'vatId',
+              type: 'text',
+              dataType: 'string',
+              label: 'VAT / Tax ID',
+              validators: [{ kind: 'required' }],
+            },
+          ],
+        },
+        {
+          id: 'review',
+          label: 'Review',
+          description: 'All set — submit when ready.',
+          fields: [
+            {
+              key: 'terms',
+              type: 'checkbox',
+              dataType: 'boolean',
+              label: 'I accept the terms and conditions',
+              colSpan: 2,
+              validators: [{ kind: 'required', message: 'You must accept the terms' }],
+            },
+          ],
         },
       ],
     },

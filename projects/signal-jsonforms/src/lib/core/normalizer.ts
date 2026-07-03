@@ -1,4 +1,11 @@
-import { DataType, FieldConfig, FieldNode, FormConfig, FormDefinition } from './model';
+import {
+  DataType,
+  FieldConfig,
+  FieldNode,
+  FormConfig,
+  FormDefinition,
+  StepDefinition,
+} from './model';
 import { validateConfig } from './definition-schema';
 import { Migration, migrateConfig } from './migration';
 
@@ -17,7 +24,21 @@ export interface NormalizeOptions {
 export function normalizeConfig(config: FormConfig, options?: NormalizeOptions): FormDefinition {
   const migrated = options?.migrations?.length ? migrateConfig(config, options.migrations) : config;
   const validated = options?.validate === false ? migrated : validateConfig(migrated);
-  const nodes = validated.fields.map((f) => toNode(f, []));
+
+  // Wizard: flatten every step's fields into the usual top-level FieldNode list
+  // (the model shape does not change) and keep a step index for the renderer.
+  if (validated.steps?.length) {
+    const nodes: FieldNode[] = [];
+    const steps: StepDefinition[] = [];
+    for (const step of validated.steps) {
+      const stepNodes = step.fields.map((f) => toNode(f, []));
+      nodes.push(...stepNodes);
+      steps.push({ config: step, nodeKeys: stepNodes.map((n) => n.key) });
+    }
+    return { config: validated, nodes, steps };
+  }
+
+  const nodes = (validated.fields ?? []).map((f) => toNode(f, []));
   return { config: validated, nodes };
 }
 

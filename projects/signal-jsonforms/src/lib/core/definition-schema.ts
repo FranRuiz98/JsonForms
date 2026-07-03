@@ -102,12 +102,38 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
     }),
 ) as z.ZodType<FieldConfig>;
 
-export const formConfigSchema = z.object({
-  version: z.string().optional(),
+const stepConfig = z.object({
   id: z.string().optional(),
-  layout: layoutConfig.optional(),
-  fields: z.array(fieldConfig).min(1, 'the form needs at least one field.'),
+  label: z.string().optional(),
+  description: z.string().optional(),
+  fields: z.array(fieldConfig).min(1, 'a step needs at least one field.'),
+  skipWhen: dynamicExpr.optional(),
 });
+
+const wizardConfig = z.object({
+  linear: z.boolean().optional(),
+  showStepper: z.boolean().optional(),
+});
+
+export const formConfigSchema = z
+  .object({
+    version: z.string().optional(),
+    id: z.string().optional(),
+    layout: layoutConfig.optional(),
+    fields: z.array(fieldConfig).optional(),
+    steps: z.array(stepConfig).optional(),
+    wizard: wizardConfig.optional(),
+  })
+  .superRefine((cfg, ctx) => {
+    const hasFields = !!cfg.fields?.length;
+    const hasSteps = !!cfg.steps?.length;
+    if (hasFields && hasSteps) {
+      ctx.addIssue({ code: 'custom', path: ['steps'], message: 'use either "fields" or "steps", not both.' });
+    }
+    if (!hasFields && !hasSteps) {
+      ctx.addIssue({ code: 'custom', path: ['fields'], message: 'the form needs "fields" or "steps".' });
+    }
+  });
 
 /** Validates the definition; throws a readable aggregated error if invalid. */
 export function validateConfig(config: unknown): FormConfig {

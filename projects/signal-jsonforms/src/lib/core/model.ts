@@ -74,11 +74,28 @@ export interface FieldConfig {
   item?: FieldConfig;                   // type 'array'
 }
 
+/** Un paso del wizard: una partición presentacional de campos de primer nivel. */
+export interface StepConfig {
+  id?: string;
+  label?: string;
+  description?: string;
+  fields: FieldConfig[];
+  skipWhen?: DynamicExpr;   // paso omitido condicionalmente (DSL o función)
+}
+
+/** Opciones del wizard multipaso. */
+export interface WizardConfig {
+  linear?: boolean;         // true (def.): no se avanza si el paso actual es inválido
+  showStepper?: boolean;    // muestra el stepper/encabezado por defecto (def. true)
+}
+
 export interface FormConfig {
   version?: string;
   id?: string;
   layout?: LayoutConfig;   // rejilla a nivel raíz (columnas para los campos de primer nivel)
-  fields: FieldConfig[];
+  fields?: FieldConfig[];  // formulario plano
+  steps?: StepConfig[];    // wizard multipaso (excluyente con fields)
+  wizard?: WizardConfig;
 }
 
 /** Nodo de la IR con path absoluto resuelto desde la raíz. */
@@ -95,7 +112,14 @@ export interface FieldNode {
   item?: FieldNode;                     // array: plantilla del elemento
 }
 
+/** Un paso normalizado: su config + las claves de los nodos de primer nivel que agrupa. */
+export interface StepDefinition {
+  config: StepConfig;
+  nodeKeys: string[];
+}
+
 export interface FormDefinition {
   config: FormConfig;
   nodes: FieldNode[];
+  steps?: StepDefinition[];   // presente cuando el formulario es un wizard
 }

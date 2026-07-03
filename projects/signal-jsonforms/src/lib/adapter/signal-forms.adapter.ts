@@ -1,8 +1,8 @@
 /**
  * ADAPTER LAYER (anti-corruption).
  * The only place in the project that imports from @angular/forms/signals.
- * Isolates the rest of the code from the @experimental API risk: if Angular
- * changes a signature, it is fixed here and nowhere else.
+ * Signal Forms is stable as of Angular v22; this single integration point means
+ * that if the API surface changes across a major, it is fixed here and nowhere else.
  */
 import {
   form, schema, apply, applyEach, applyWhen,

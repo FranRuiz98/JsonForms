@@ -360,7 +360,7 @@ const { form, model } = buildSignalForm(jsonConfig, { injector, registries });
 | **1.5 — Async** | **Async validation (`validateAsync`)** + declarative `debounce` | Done |
 | **2 — Integrations** | Plain-HTML adapter, wrapper system + pending indicator, per-form kit override, layout (column grids + collapsible sections) | Done |
 | **3 — Advanced** | Centralized i18n messages, derived/`computed` fields (incl. inside array items), migration/serialization | Done |
-| **4 — Coverage** | Dynamic/async options (cascading), multi-step wizard, plus quick wins (stacked wrappers, `clearOnHide`) — see section 13 | In progress |
+| **4 — Coverage** | Dynamic/async options (cascading), multi-step wizard, plus quick wins (stacked wrappers, `clearOnHide`) — see section 13 | Done |
 
 ---
 
@@ -480,7 +480,7 @@ provideJsonForms({
 
 ---
 
-### 13.2 Multi-step forms (wizard)
+### 13.2 Multi-step forms (wizard) — implemented
 
 **Problem.** Onboarding, surveys and long sign-ups are split into steps with navigation and per-step validation. There is no way to express that today.
 
@@ -517,15 +517,15 @@ export interface FormConfig {
 
 **Normalization.** The `Normalizer` flattens `steps[].fields` into the usual `FieldNode` list (top-level paths, no step prefix → the model shape doesn't change), and stores a `stepIndex: { step: StepConfig; nodeKeys: string[] }[]` map in `FormDefinition`. The `SchemaCompiler` and `ModelBuilder` are unaware of steps. The meta-validation (Zod) accepts `steps` **or** `fields`, not both.
 
-**`JfWizard` component (render layer, kit-agnostic).** Signal-based state:
+**Wizard state (render layer, kit-agnostic).** Implemented on `FormHost` itself (so it is reachable via `exportAs`), signal-based:
 
-- `currentStep: WritableSignal<number>`, skipping steps whose `skipWhen` is true.
-- `stepValid(i): Signal<boolean>` = every field in step `i` is valid (derived from `FieldState`).
-- `next()` → if `linear` and the current step is invalid, mark its fields `touched` and don't advance; otherwise move to the next visible step. `prev()`, `goTo(i)` (in `linear`, only to already-completed steps).
-- `isLast`, `isFirst`, `progress` computed.
-- `submit()` fires from the last step (reusing the existing async `submit()` on `FormHost`).
+- `currentStep: WritableSignal<number>`; `next()`/`prev()`/`goTo(i)` skip steps whose `skipWhen` is true.
+- `stepValidAt(i)` = every field in step `i` is valid (derived from `FieldState`).
+- `next()` → if `linear` and the current step is invalid, best-effort marks its fields `touched` (via `markAsTouched()` when available) and does not advance; otherwise moves to the next visible step. `goTo(i)` allows backward freely, and forward only when prior steps are valid (in `linear`).
+- `isFirst`, `isLast`, `currentStepValid` computed.
+- The built-in Submit reuses the existing async `submit()` on `FormHost` and emits `(submitted)` with the model.
 
-The default stepper is **structural and unstyled** (classes `jf-step`, `jf-step-active`, `jf-step-done` for theming), like today's `.jf-group`/`.jf-array`. An adapter could later offer a `mat-stepper`-based one. The default navigation (Prev/Next/Submit) is rendered but **replaceable**: `<jf-form>` exposes the wizard state via its `exportAs` (`#f="jfForm"` → `f.wizard`) so consumers can build their own buttons.
+The default stepper is **structural and unstyled** (classes `jf-step`, `jf-step-active`, `jf-step-done` for theming), like today's `.jf-group`/`.jf-array`. An adapter could later offer a `mat-stepper`-based one. The default navigation (Back/Next/Submit) is rendered but **replaceable**: `<jf-form>` exposes the wizard state via its `exportAs` (`#f="jfForm"` → `f.currentStep()`, `f.next()`, `f.prev()`, `f.goTo(i)`, `f.isLast()`, `f.stepValidAt(i)`) so consumers can build their own buttons.
 
 **Example JSON:**
 
@@ -564,5 +564,5 @@ Interop with standard JSON Schema, renderer selection by *tester*/ranking, per-f
 | `model.ts` | `OptionItem`, `OptionsConfig`, `FieldConfig.options`, `clearOnOptionsChange`, `clearOnHide`, `StepConfig`, `WizardConfig`, `FormConfig.steps/wizard`, optional `fields`, `wrapper: string \| string[]` | Yes (all additive / widened) |
 | `registry/types.ts` | `OptionSourceDef`, `OptionsState`, `JsonFormsConfig.optionSources` | Yes |
 | `field-component.interface.ts` | `options?: Signal<OptionsState>` | Yes (optional) |
-| `render/` | `JfWizard`, default stepper, `FormHost` exposes `wizard` | Yes (only active when `steps` is present) |
+| `render/` | wizard on `FormHost` (stepper + Back/Next/Submit, `currentStep`/`next`/`prev`/`goTo`/`stepValidAt`, `(submitted)` output) | Yes (only active when `steps` is present) |
 | new `core/` | `OptionsResolver` | Yes |

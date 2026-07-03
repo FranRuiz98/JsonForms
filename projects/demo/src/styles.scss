@@ -118,3 +118,122 @@ body {
 .jf-pending::before {
   content: '⏳ ';
 }
+
+/* --- Wizard (multi-step) --------------------------------------------------- */
+.jf-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+}
+
+.jf-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #e2e4e8;
+  border-radius: 999px;
+  background: #fff;
+  color: #5b6675;
+  font-size: 0.84rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.jf-step:hover {
+  border-color: #c7d2fe;
+}
+
+.jf-step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: #eef1f5;
+  color: #5b6675;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.jf-step-active {
+  border-color: #2563eb;
+  color: #1d4ed8;
+  background: #eef3ff;
+}
+
+.jf-step-active .jf-step-num {
+  background: #2563eb;
+  color: #fff;
+}
+
+.jf-step-done .jf-step-num {
+  background: #16a34a;
+  color: #fff;
+}
+
+.jf-step-done .jf-step-num::after {
+  content: '✓';
+}
+
+.jf-step-done .jf-step-num {
+  font-size: 0;
+}
+
+.jf-step-done .jf-step-num::after {
+  font-size: 0.8rem;
+}
+
+.jf-step-description {
+  margin: 0 0 0.9rem;
+  color: #5b6675;
+  font-size: 0.9rem;
+}
+
+.jf-wizard-hint {
+  margin: 0.6rem 0 0;
+  color: #dc2626;
+  font-size: 0.82rem;
+}
+
+.jf-wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.2rem;
+}
+
+.jf-wizard-nav button {
+  padding: 0.5rem 1.3rem;
+  border: 1px solid #dde2e9;
+  border-radius: 8px;
+  background: #fff;
+  color: #384150;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.jf-next,
+.jf-submit {
+  background: #2563eb !important;
+  border-color: #2563eb !important;
+  color: #fff !important;
+}
+
+.jf-next:hover,
+.jf-submit:hover {
+  background: #1d4ed8 !important;
+  border-color: #1d4ed8 !important;
+}
+
+.jf-wizard-nav button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

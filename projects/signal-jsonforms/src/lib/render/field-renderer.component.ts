@@ -114,11 +114,18 @@ export class FieldRendererComponent {
     return sig ? sig() : undefined;
   });
 
-  private readonly controlInputs = computed(() => ({
-    field: this.field(),
-    config: this.node().config,
-    options: this.optionsState(),
-  }));
+  private readonly controlInputs = computed(() => {
+    const inputs: Record<string, unknown> = {
+      field: this.field(),
+      config: this.node().config,
+    };
+    // Only pass `options` when the field actually has dynamic options; otherwise
+    // NgComponentOutlet would try to set an input that plain controls (text,
+    // number, checkbox…) do not declare, and throw.
+    const opts = this.optionsState();
+    if (opts !== undefined) inputs['options'] = opts;
+    return inputs;
+  });
 
   /**
    * Composes the wrapper stack around the control. Each wrapper receives the next

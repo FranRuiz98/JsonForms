@@ -359,6 +359,38 @@ Layout is **purely presentational** — it never changes the model shape or path
 
 The grid is applied with inline styles, so it works the same with any component kit.
 
+### Multi-step wizard
+
+Use `steps` instead of `fields` to turn a form into a wizard. The model stays flat and
+`form()` is built once — a step is just a presentational partition of the top-level fields,
+and each step's validity is derived from its fields' state.
+
+```jsonc
+{
+  "version": "1",
+  "wizard": { "linear": true, "showStepper": true },  // both default to true
+  "layout": { "columns": 2 },                          // applies within each step
+  "steps": [
+    { "id": "account", "label": "Account", "description": "Your credentials.",
+      "fields": [
+        { "key": "email", "type": "text", "validators": [ { "kind": "required" }, { "kind": "email" } ] }
+      ] },
+    { "id": "company", "label": "Company",
+      "skipWhen": { "expr": "model.accountType !== 'business'" },   // conditionally skipped
+      "fields": [ { "key": "vatId", "type": "text", "validators": [ { "kind": "required" } ] } ] }
+  ]
+}
+```
+
+- `steps` and `fields` are mutually exclusive; each step needs its own `fields`.
+- `linear` (default `true`) blocks **Next** while the current step is invalid; `skipWhen`
+  (DSL or `{ fn }`) hides a step reactively.
+- `<jf-form>` renders a default stepper and Back/Next/Submit buttons (unstyled — theme the
+  `.jf-step*` / `.jf-wizard-nav` classes). The built-in Submit emits `(submitted)` with the
+  model. For custom navigation, drive it via `#f="jfForm"`: `f.currentStep()`, `f.next()`,
+  `f.prev()`, `f.goTo(i)`, `f.isFirst()`, `f.isLast()`, `f.stepValidAt(i)`.
+- Scope: steps hold top-level fields (which may themselves be groups/arrays).
+
 ---
 
 ## The expression DSL
