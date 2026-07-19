@@ -81,7 +81,9 @@
                 "input": "projects/demo/public"
               }
             ],
-            "styles": ["projects/demo/src/styles.scss"]
+            "styles": [
+              "projects/demo/src/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -147,6 +149,75 @@
           "options": {
             "tsConfig": "projects/signal-jsonforms-html/tsconfig.spec.json"
           }
+        }
+      }
+    },
+    "web-builder": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/web-builder",
+      "sourceRoot": "projects/web-builder/src",
+      "prefix": "wb",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "projects/web-builder/src/main.ts",
+            "tsConfig": "projects/web-builder/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "projects/web-builder/public"
+              }
+            ],
+            "styles": [
+              "projects/web-builder/src/tailwind.css",
+              "projects/web-builder/src/styles.scss"
+            ]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "12kB",
+                  "maximumError": "24kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular/build:dev-server",
+          "configurations": {
+            "production": {
+              "buildTarget": "web-builder:build:production"
+            },
+            "development": {
+              "buildTarget": "web-builder:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test"
         }
       }
     }

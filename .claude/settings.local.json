@@ -4,7 +4,11 @@
       "Bash(npx ng *)",
       "Bash(grep -r \"//.*[áéíóúñü]\" --include=\"*.ts\" --include=\"*.js\" projects/ docs/)",
       "Bash(grep -E \"//.*[á-ú]\")",
-      "Bash(xargs grep -l \"//.*de \\\\|// .*El \\\\|// .*La \\\\|// .*Un \\\\|// .*Una \")"
+      "Bash(xargs grep -l \"//.*de \\\\|// .*El \\\\|// .*La \\\\|// .*Un \\\\|// .*Una \")",
+      "Bash(git -C \"C:\\\\Users\\\\Francisco Ruiz\\\\Desktop\\\\ClaudeCode\\\\JsonForms\" diff --stat)",
+      "Bash(sed 's|.*projects.||')",
+      "Bash(git -C \"C:\\\\Users\\\\Francisco Ruiz\\\\Desktop\\\\ClaudeCode\\\\JsonForms\" status --short)",
+      "Bash(git -C \"C:\\\\Users\\\\Francisco Ruiz\\\\Desktop\\\\ClaudeCode\\\\JsonForms\" log --oneline -12)"
     ]
   }
 }

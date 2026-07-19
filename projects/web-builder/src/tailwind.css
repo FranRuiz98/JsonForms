@@ -1,0 +1,104 @@
+/*
+ * Tailwind v4 entry for the web-builder app. Imports theme + utilities layers
+ * but OMITS preflight so it doesn't reset Angular Material in the live preview.
+ */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@source './**/*.{html,ts}';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  .wb-app,
+  .wb-app *,
+  .wb-app *::before,
+  .wb-app *::after {
+    box-sizing: border-box;
+  }
+}
+
+/* Reusable button styles ---------------------------------------------------- */
+@layer components {
+  .wb-btn {
+    @apply inline-flex select-none items-center gap-1.5 rounded-lg px-3 py-1.5 text-[13px] font-medium transition;
+  }
+  .wb-btn:disabled {
+    @apply pointer-events-none opacity-40;
+  }
+  .wb-btn:focus-visible {
+    @apply outline-none ring-2 ring-indigo-300 ring-offset-1;
+  }
+
+  .wb-btn-primary {
+    @apply bg-gradient-to-b from-indigo-500 to-indigo-600 text-white shadow-sm hover:from-indigo-500 hover:to-indigo-500 active:from-indigo-600 active:to-indigo-700;
+  }
+  .wb-btn-ghost {
+    @apply text-slate-600 hover:bg-slate-100 active:bg-slate-200/70;
+  }
+  .wb-btn-soft {
+    @apply border border-slate-200 bg-white text-slate-600 shadow-sm hover:border-slate-300 hover:bg-slate-50 active:bg-slate-100;
+  }
+
+  .wb-icon-btn {
+    @apply flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800;
+  }
+  .wb-icon-btn:disabled {
+    @apply pointer-events-none opacity-30;
+  }
+}
+
+/* Design surface + scrollbars ---------------------------------------------- */
+.wb-surface {
+  background-color: #f8fafc;
+  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+.wb-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+.wb-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.wb-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.wb-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* CDK drag & drop ----------------------------------------------------------- */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(2, 6, 23, 0.18), 0 2px 6px rgba(2, 6, 23, 0.08);
+  opacity: 0.97;
+}
+.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+.cdk-drag-placeholder > * {
+  outline: 2px dashed #a5b4fc;
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+.wb-dropzone.cdk-drop-list-dragging .wb-node-drag:not(.cdk-drag-placeholder) {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+.wb-dropzone.cdk-drop-list-dragging {
+  background-color: rgba(99, 102, 241, 0.07);
+  outline: 2px solid rgba(129, 140, 248, 0.75);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
