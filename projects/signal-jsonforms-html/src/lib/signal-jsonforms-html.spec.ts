@@ -1,6 +1,6 @@
-// Spec placeholder. Las pruebas reales llegan con la implementación.
+// Spec placeholder. Real tests come with implementation.
 describe('signal-jsonforms-html', () => {
-  it('scaffold listo', () => {
+  it('scaffold ready', () => {
     expect(true).toBe(true);
   });
 });

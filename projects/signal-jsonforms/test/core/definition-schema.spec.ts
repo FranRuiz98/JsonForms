@@ -194,3 +194,70 @@ describe('validateConfig', () => {
     });
   });
 });
+
+// ── Phase 4 additions: options, wrappers, clearOn*, wizard ──────────────────
+
+describe('validateConfig (phase 4)', () => {
+  const field = (extra: object) => ({ fields: [{ key: 'c', type: 'select', ...extra }] });
+
+  describe('options', () => {
+    it('accepts a static inline options array', () => {
+      expect(() => validateConfig(field({ options: [{ value: 'a', label: 'A' }] }))).not.toThrow();
+    });
+
+    it('accepts an { expr } options source', () => {
+      expect(() => validateConfig(field({ options: { expr: 'model.list' } }))).not.toThrow();
+    });
+
+    it('accepts a { source, debounce } options source', () => {
+      expect(() => validateConfig(field({ options: { source: 'cities', debounce: 200 } }))).not.toThrow();
+    });
+
+    it('accepts clearOnOptionsChange', () => {
+      expect(() => validateConfig(field({ options: { source: 'x' }, clearOnOptionsChange: true }))).not.toThrow();
+    });
+  });
+
+  describe('quick wins', () => {
+    it('accepts wrapper as a single string', () => {
+      expect(() => validateConfig({ fields: [{ key: 'c', type: 'text', wrapper: 'card' }] })).not.toThrow();
+    });
+
+    it('accepts wrapper as an array of strings', () => {
+      expect(() => validateConfig({ fields: [{ key: 'c', type: 'text', wrapper: ['card', 'default'] }] })).not.toThrow();
+    });
+
+    it('accepts clearOnHide', () => {
+      expect(() => validateConfig({ fields: [{ key: 'c', type: 'text', clearOnHide: true }] })).not.toThrow();
+    });
+  });
+
+  describe('wizard', () => {
+    const step = { fields: [{ key: 'email', type: 'text' }] };
+
+    it('accepts a config with steps and no fields', () => {
+      expect(() => validateConfig({ steps: [step] })).not.toThrow();
+    });
+
+    it('accepts a wizard config and a skipWhen on a step', () => {
+      expect(() =>
+        validateConfig({
+          wizard: { linear: true, showStepper: false },
+          steps: [{ ...step, skipWhen: { expr: 'model.kind === "guest"' } }],
+        }),
+      ).not.toThrow();
+    });
+
+    it('throws when both fields and steps are present', () => {
+      expect(() => validateConfig({ fields: [{ key: 'a', type: 'text' }], steps: [step] })).toThrow();
+    });
+
+    it('throws when neither fields nor steps are present', () => {
+      expect(() => validateConfig({ version: '1' })).toThrow();
+    });
+
+    it('throws when a step has no fields', () => {
+      expect(() => validateConfig({ steps: [{ fields: [] }] })).toThrow();
+    });
+  });
+});

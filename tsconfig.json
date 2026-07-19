@@ -28,29 +28,14 @@
   },
   "files": [],
   "references": [
-    {
-      "path": "./projects/signal-jsonforms/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/signal-jsonforms/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/signal-jsonforms-material/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/signal-jsonforms-material/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/demo/tsconfig.app.json"
-    },
-    {
-      "path": "./projects/demo/tsconfig.spec.json"
-    },
-    {
-      "path": "./projects/signal-jsonforms-html/tsconfig.lib.json"
-    },
-    {
-      "path": "./projects/signal-jsonforms-html/tsconfig.spec.json"
-    }
+    { "path": "./projects/signal-jsonforms/tsconfig.lib.json" },
+    { "path": "./projects/signal-jsonforms/tsconfig.spec.json" },
+    { "path": "./projects/signal-jsonforms-material/tsconfig.lib.json" },
+    { "path": "./projects/signal-jsonforms-material/tsconfig.spec.json" },
+    { "path": "./projects/demo/tsconfig.app.json" },
+    { "path": "./projects/demo/tsconfig.spec.json" },
+    { "path": "./projects/signal-jsonforms-html/tsconfig.lib.json" },
+    { "path": "./projects/signal-jsonforms-html/tsconfig.spec.json" },
+    { "path": "./projects/web-builder/tsconfig.app.json" }
   ]
 }

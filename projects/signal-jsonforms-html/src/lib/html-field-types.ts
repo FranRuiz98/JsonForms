@@ -5,8 +5,8 @@ import { HtmlSelectComponent } from './fields/select.component';
 import { HtmlCheckboxComponent } from './fields/checkbox.component';
 
 /**
- * Registro de tipos de campo del adaptador HTML plano (sin dependencias de UI).
- * Úsalo junto con HtmlFieldWrapperComponent:
+ * Field type registry for plain HTML adapter (no UI dependencies).
+ * Use with HtmlFieldWrapperComponent:
  *   provideJsonForms({ fieldTypes: HTML_FIELD_TYPES, wrappers: { default: HtmlFieldWrapperComponent }, defaultWrapper: 'default' })
  */
 export const HTML_FIELD_TYPES: FieldTypeRegistry = {

@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx ng *)"
+      "Bash(npx ng *)",
+      "Bash(grep -r \"//.*[áéíóúñü]\" --include=\"*.ts\" --include=\"*.js\" projects/ docs/)",
+      "Bash(grep -E \"//.*[á-ú]\")",
+      "Bash(xargs grep -l \"//.*de \\\\|// .*El \\\\|// .*La \\\\|// .*Un \\\\|// .*Una \")"
     ]
   }
 }

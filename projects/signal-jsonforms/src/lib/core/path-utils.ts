@@ -1,6 +1,6 @@
 /**
- * Actualización inmutable por path. Soporta claves de objeto (string) e índices
- * de array (number). Devuelve una copia nueva con el segmento final transformado.
+ * Immutable update by path. Supports object keys (string) and array indices (number).
+ * Returns a new copy with the final segment transformed.
  */
 export function updateIn(
   obj: any,

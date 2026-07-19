@@ -3,10 +3,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import { FieldNode, FieldTree, JSON_FORMS_CONFIG } from 'signal-jsonforms';
 
 /**
- * Wrapper del kit HTML. A diferencia del wrapper por defecto del núcleo (pensado
- * para controles self-wrapping como Material), aquí los controles son "desnudos",
- * así que el wrapper aporta TODA la chrome: label, descripción, error, hint y el
- * indicador pending. Esto es lo que el sistema de wrappers pretende demostrar.
+ * HTML kit wrapper. Unlike the core's default wrapper (designed for self-wrapping
+ * controls like Material), here controls are "bare", so the wrapper provides ALL
+ * the chrome: label, description, error, hint, and pending indicator. This
+ * demonstrates what the wrapper system is meant to do.
  */
 @Component({
   selector: 'jfh-field-wrapper',

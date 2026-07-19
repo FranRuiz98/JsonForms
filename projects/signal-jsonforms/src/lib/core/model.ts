@@ -1,28 +1,28 @@
-// Tipos de la definición JSON (formato híbrido) y de la representación interna (IR).
+// Types from JSON definition (hybrid format) and internal representation (IR).
 
 export type DataType = 'string' | 'number' | 'boolean' | 'array' | 'object';
 export type FieldKind = 'control' | 'group' | 'array';
 
-/** Lógica dinámica: DSL (expr) o función registrada (fn). Modelo híbrido. */
+/** Dynamic logic: DSL (expr) or registered function (fn). Hybrid model. */
 export type DynamicExpr = { expr: string } | { fn: string };
 
-/** Validador síncrono declarado en el JSON. */
+/** Synchronous validator declared in JSON. */
 export interface ValidatorConfig {
   kind: string;          // required | email | min | max | minLength | maxLength | pattern | expr | fn | <custom>
   value?: unknown;
   message?: string;
-  when?: DynamicExpr;     // OJO: en Signal Forms 'when' solo aplica a required()
+  when?: DynamicExpr;     // NOTE: in Signal Forms 'when' only applies to required()
   expr?: string;          // kind 'expr' (cross-field/custom DSL)
-  fn?: string;            // kind 'fn' (validador registrado)
+  fn?: string;            // kind 'fn' (registered validator)
 }
 
-/** Validador asíncrono: solo referencia una clave del ValidatorRegistry (no serializable). */
+/** Asynchronous validator: only references a key from ValidatorRegistry (not serializable). */
 export interface AsyncValidatorConfig {
   kind: string;
   debounce?: number;
 }
 
-/** Una opción de un campo de selección. */
+/** A single option for a select field. */
 export interface OptionItem {
   value: unknown;
   label: string;
@@ -30,11 +30,11 @@ export interface OptionItem {
 }
 
 /**
- * Origen de las opciones de un campo (selección):
- * - OptionItem[]              estáticas, inline
- * - { expr }                  derivadas del modelo (DSL); evalúa a OptionItem[]
- * - { fn }                    derivadas (función registrada en `functions`)
- * - { source, debounce }      async, vía `optionSources` del registro (resource)
+ * Source for field options (select field):
+ * - OptionItem[]              static, inline
+ * - { expr }                  derived from model (DSL); evaluates to OptionItem[]
+ * - { fn }                    derived (function registered in `functions`)
+ * - { source, debounce }      async, via `optionSources` from registry (resource)
  */
 export type OptionsConfig =
   | OptionItem[]
@@ -42,17 +42,17 @@ export type OptionsConfig =
   | { fn: string }
   | { source: string; debounce?: number };
 
-/** Configuración de rejilla para disponer hijos en columnas. */
+/** Grid configuration for laying out children in columns. */
 export interface LayoutConfig {
-  columns?: number;   // nº de columnas de la rejilla
-  gap?: string;       // separación CSS (p. ej. '0.75rem 1rem')
+  columns?: number;   // number of grid columns
+  gap?: string;       // CSS gap (e.g. '0.75rem 1rem')
 }
 
-/** Campo tal cual se declara en el JSON. */
+/** Field as declared in JSON. */
 export interface FieldConfig {
   key: string;
-  type: string;                         // tipo de UI -> FieldTypeRegistry
-  dataType?: DataType;                  // tipo de dato -> ModelBuilder
+  type: string;                         // UI type -> FieldTypeRegistry
+  dataType?: DataType;                  // data type -> ModelBuilder
   label?: string;
   props?: Record<string, unknown>;
   defaultValue?: unknown;
@@ -61,44 +61,44 @@ export interface FieldConfig {
   hidden?: DynamicExpr;
   disabled?: DynamicExpr;
   readonly?: DynamicExpr;
-  computed?: DynamicExpr;        // valor derivado (expr/fn); el campo se vuelve readonly
-  options?: OptionsConfig;       // opciones dinámicas/async (select); las estáticas también valen en props.options
-  clearOnOptionsChange?: boolean;// si el valor deja de estar entre las opciones, lo resetea (cascading)
-  clearOnHide?: boolean;         // al ocultarse (hidden=true) resetea su valor al default
-  wrapper?: string | string[];   // clave(s) en el WrapperRegistry; varias se apilan (la 1ª es la más externa)
-  layout?: LayoutConfig;         // rejilla para los hijos (group)
-  colSpan?: number;              // columnas que ocupa el campo en una rejilla
-  collapsible?: boolean;         // group plegable (sección)
-  collapsed?: boolean;           // estado inicial plegado
+  computed?: DynamicExpr;        // derived value (expr/fn); field becomes readonly
+  options?: OptionsConfig;       // dynamic/async options (select); static also valid in props.options
+  clearOnOptionsChange?: boolean;// if value leaves resolved options, reset it (cascading)
+  clearOnHide?: boolean;         // when hidden (hidden=true) reset to default
+  wrapper?: string | string[];   // key(s) in WrapperRegistry; multiple stack (first is outermost)
+  layout?: LayoutConfig;         // grid for children (group)
+  colSpan?: number;              // columns field spans in a grid
+  collapsible?: boolean;         // group collapsible (section)
+  collapsed?: boolean;           // initially collapsed state
   fields?: FieldConfig[];               // type 'group'
   item?: FieldConfig;                   // type 'array'
 }
 
-/** Un paso del wizard: una partición presentacional de campos de primer nivel. */
+/** A step in the wizard: a presentational partition of top-level fields. */
 export interface StepConfig {
   id?: string;
   label?: string;
   description?: string;
   fields: FieldConfig[];
-  skipWhen?: DynamicExpr;   // paso omitido condicionalmente (DSL o función)
+  skipWhen?: DynamicExpr;   // step conditionally skipped (DSL or function)
 }
 
-/** Opciones del wizard multipaso. */
+/** Multi-step wizard options. */
 export interface WizardConfig {
-  linear?: boolean;         // true (def.): no se avanza si el paso actual es inválido
-  showStepper?: boolean;    // muestra el stepper/encabezado por defecto (def. true)
+  linear?: boolean;         // true (default): cannot advance if current step is invalid
+  showStepper?: boolean;    // show stepper/header by default (default true)
 }
 
 export interface FormConfig {
   version?: string;
   id?: string;
-  layout?: LayoutConfig;   // rejilla a nivel raíz (columnas para los campos de primer nivel)
-  fields?: FieldConfig[];  // formulario plano
-  steps?: StepConfig[];    // wizard multipaso (excluyente con fields)
+  layout?: LayoutConfig;   // root-level grid (columns for top-level fields)
+  fields?: FieldConfig[];  // flat form
+  steps?: StepConfig[];    // multi-step wizard (mutually exclusive with fields)
   wizard?: WizardConfig;
 }
 
-/** Nodo de la IR con path absoluto resuelto desde la raíz. */
+/** IR node with absolute path resolved from root. */
 export interface FieldNode {
   kind: FieldKind;
   key: string;
@@ -109,10 +109,10 @@ export interface FieldNode {
   validators: ValidatorConfig[];
   asyncValidators: AsyncValidatorConfig[];
   children: FieldNode[];                // group
-  item?: FieldNode;                     // array: plantilla del elemento
+  item?: FieldNode;                     // array: item template
 }
 
-/** Un paso normalizado: su config + las claves de los nodos de primer nivel que agrupa. */
+/** A normalized step: its config + keys of top-level nodes it groups. */
 export interface StepDefinition {
   config: StepConfig;
   nodeKeys: string[];
@@ -121,5 +121,5 @@ export interface StepDefinition {
 export interface FormDefinition {
   config: FormConfig;
   nodes: FieldNode[];
-  steps?: StepDefinition[];   // presente cuando el formulario es un wizard
+  steps?: StepDefinition[];   // present when form is a wizard
 }

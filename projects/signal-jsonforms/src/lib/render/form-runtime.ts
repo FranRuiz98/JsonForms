@@ -2,9 +2,9 @@ import { InjectionToken, Signal, WritableSignal } from '@angular/core';
 import { OptionsState } from '../registry/types';
 
 /**
- * Servicio de runtime que el FormHost expone a los renderers para mutar el modelo
- * (necesario para add/remove de items de array, que en Signal Forms se hace
- * cambiando el modelo, no el form) y para resolver las opciones dinámicas de un campo.
+ * Runtime service that FormHost exposes to renderers for mutating the model
+ * (necessary for array item add/remove, which in Signal Forms is done by
+ * changing the model, not the form) and for resolving dynamic field options.
  */
 export interface JsonFormsRuntime {
   readonly model: WritableSignal<Record<string, unknown>>;

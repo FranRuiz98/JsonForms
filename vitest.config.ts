@@ -25,8 +25,8 @@ export default defineConfig({
       statements: 80,
     },
     include: [
-      'projects/**/*.spec.ts',              // archivos spec junto al código fuente
-      'projects/**/test/**/*.spec.ts',       // batería de tests en carpetas test/
+      'projects/**/*.spec.ts',              // spec files next to source code
+      'projects/**/test/**/*.spec.ts',       // test suite in test/ folders
     ],
     exclude: ['node_modules', 'dist'],
     testTimeout: 10000,

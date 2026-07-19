@@ -198,3 +198,52 @@ describe('normalizeConfig', () => {
     });
   });
 });
+
+// ── wizard (steps) ──────────────────────────────────────────────────────────
+
+describe('normalizeConfig (wizard steps)', () => {
+  const wizard: FormConfig = {
+    steps: [
+      { id: 'a', label: 'A', fields: [text('email'), text('name')] },
+      { id: 'b', label: 'B', skipWhen: { expr: 'model.x' }, fields: [text('phone')] },
+    ],
+  };
+
+  it('flattens every step field into the top-level node list, in order', () => {
+    const { nodes } = normalizeConfig(wizard, SKIP_VALIDATION);
+    expect(nodes.map((n) => n.key)).toEqual(['email', 'name', 'phone']);
+  });
+
+  it('gives step fields top-level paths (no step prefix)', () => {
+    const { nodes } = normalizeConfig(wizard, SKIP_VALIDATION);
+    expect(nodes.map((n) => n.path)).toEqual([['email'], ['name'], ['phone']]);
+  });
+
+  it('returns a step definition with the config and its node keys', () => {
+    const { steps } = normalizeConfig(wizard, SKIP_VALIDATION);
+    expect(steps).toHaveLength(2);
+    expect(steps![0].nodeKeys).toEqual(['email', 'name']);
+    expect(steps![1].nodeKeys).toEqual(['phone']);
+    expect(steps![1].config.skipWhen).toEqual({ expr: 'model.x' });
+  });
+
+  it('does not attach a steps definition to a plain (fields) form', () => {
+    const { steps } = normalizeConfig({ fields: [text('name')] }, SKIP_VALIDATION);
+    expect(steps).toBeUndefined();
+  });
+
+  it('normalizes groups/arrays inside a step', () => {
+    const config: FormConfig = {
+      steps: [
+        {
+          fields: [
+            { key: 'addr', type: 'group', fields: [text('street')] } as any,
+          ],
+        },
+      ],
+    };
+    const { nodes } = normalizeConfig(config, SKIP_VALIDATION);
+    expect(nodes[0].kind).toBe('group');
+    expect(nodes[0].children[0].path).toEqual(['addr', 'street']);
+  });
+});
