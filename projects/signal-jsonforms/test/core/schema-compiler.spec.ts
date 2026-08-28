@@ -244,6 +244,164 @@ describe('compileSchema', () => {
     });
   });
 
+  describe('minItems / maxItems (containers)', () => {
+    it('maps minItems to api.minLength with an item-flavored default message', () => {
+      const api = createMockApi();
+      const item = makeControlNode({ key: 'val', path: ['val'] });
+      const node = makeArrayNode('tags', item, { validators: [{ kind: 'minItems', value: 1 }] });
+      compileSchema([node], api as any)(mockRoot(['tags']));
+      expect(api.minLength).toHaveBeenCalledWith('path_tags', 1, { message: 'At least 1 item(s)' });
+    });
+
+    it('maps maxItems to api.maxLength with an item-flavored default message', () => {
+      const api = createMockApi();
+      const item = makeControlNode({ key: 'val', path: ['val'] });
+      const node = makeArrayNode('tags', item, { validators: [{ kind: 'maxItems', value: 5 }] });
+      compileSchema([node], api as any)(mockRoot(['tags']));
+      expect(api.maxLength).toHaveBeenCalledWith('path_tags', 5, { message: 'At most 5 item(s)' });
+    });
+
+    it('prefers the field message over the built-in default', () => {
+      const api = createMockApi();
+      const item = makeControlNode({ key: 'val', path: ['val'] });
+      const node = makeArrayNode('tags', item, {
+        validators: [{ kind: 'minItems', value: 2, message: 'Add {value} tags' }],
+      });
+      compileSchema([node], api as any)(mockRoot(['tags']));
+      expect(api.minLength).toHaveBeenCalledWith('path_tags', 2, { message: 'Add 2 tags' });
+    });
+
+    it('applies expr validators on group nodes', () => {
+      const api = createMockApi();
+      const child = makeControlNode({ key: 'a', path: ['g', 'a'] });
+      const group = makeGroupNode('g', [child], {
+        validators: [{ kind: 'expr', expr: 'value.a !== ""' }],
+      });
+      compileSchema([group], api as any)({ g: mockRoot(['a']) });
+      expect(api.validate).toHaveBeenCalled();
+    });
+  });
+
+  describe('conditional validator (when)', () => {
+    it('wraps the validator in api.applyWhen instead of applying it directly', () => {
+      const api = createMockApi();
+      const nodes = [makeControlNode({
+        key: 'f', path: ['f'],
+        validators: [{ kind: 'required', when: { expr: 'model.x === 1' } }],
+      })];
+      compileSchema(nodes, api as any)(mockRoot(['f', 'x']));
+      expect(api.applyWhen).toHaveBeenCalledTimes(1);
+      expect(api.required).not.toHaveBeenCalled();
+    });
+
+    it('applies the wrapped validator inside the applyWhen schema, minus the when', () => {
+      const api = createMockApi();
+      let schemaFn: ((p: any) => void) | undefined;
+      (api.applyWhen as ReturnType<typeof vi.fn>).mockImplementation((_p: any, _c: any, s: any) => { schemaFn = s; });
+
+      const nodes = [makeControlNode({
+        key: 'f', path: ['f'],
+        validators: [{ kind: 'required', message: 'Required', when: { expr: 'model.x === 1' } }],
+      })];
+      compileSchema(nodes, api as any)(mockRoot(['f', 'x']));
+
+      schemaFn!('inner_path');
+      expect(api.required).toHaveBeenCalledWith('inner_path', { message: 'Required' });
+    });
+
+    it('the condition evaluates the DSL against the model', () => {
+      const api = createMockApi();
+      let condition: ((fc: any) => boolean) | undefined;
+      (api.applyWhen as ReturnType<typeof vi.fn>).mockImplementation((_p: any, c: any) => { condition = c; });
+
+      const nodes = [makeControlNode({
+        key: 'f', path: ['f'],
+        validators: [{ kind: 'required', when: { expr: 'model.x === 1' } }],
+      })];
+      compileSchema(nodes, api as any)(mockRoot(['f', 'x']));
+
+      expect(condition!(mockFc('', { path_x: 1 }))).toBe(true);
+      expect(condition!(mockFc('', { path_x: 2 }))).toBe(false);
+    });
+
+    it('supports a registered function as condition', () => {
+      const api = createMockApi();
+      let condition: ((fc: any) => boolean) | undefined;
+      (api.applyWhen as ReturnType<typeof vi.fn>).mockImplementation((_p: any, c: any) => { condition = c; });
+
+      const isBusiness = vi.fn().mockReturnValue(true);
+      const nodes = [makeControlNode({
+        key: 'f', path: ['f'],
+        validators: [{ kind: 'required', when: { fn: 'isBusiness' } }],
+      })];
+      compileSchema(nodes, api as any, { functions: { isBusiness } })(mockRoot(['f']));
+
+      expect(condition!(mockFc(''))).toBe(true);
+      expect(isBusiness).toHaveBeenCalled();
+    });
+  });
+
+  describe('hidden fields skip validation', () => {
+    const hiddenNode = (extra: Record<string, unknown> = {}) =>
+      makeControlNode({
+        key: 'f', path: ['f'],
+        config: { key: 'f', type: 'text', hidden: { expr: 'model.x === 1' }, ...extra },
+        validators: [{ kind: 'required' }],
+      });
+
+    it('wraps validators in applyWhen when the field has a hidden rule', () => {
+      const api = createMockApi();
+      compileSchema([hiddenNode()], api as any)(mockRoot(['f', 'x']));
+      expect(api.applyWhen).toHaveBeenCalledTimes(1);
+      expect(api.required).not.toHaveBeenCalled();
+    });
+
+    it('the condition is the negated hidden rule', () => {
+      const api = createMockApi();
+      let condition: ((fc: any) => boolean) | undefined;
+      (api.applyWhen as ReturnType<typeof vi.fn>).mockImplementation((_p: any, c: any) => { condition = c; });
+      compileSchema([hiddenNode()], api as any)(mockRoot(['f', 'x']));
+
+      expect(condition!(mockFc('', { path_x: 1 }))).toBe(false);  // hidden -> no validation
+      expect(condition!(mockFc('', { path_x: 2 }))).toBe(true);   // visible -> validates
+    });
+
+    it('the wrapped schema applies the validators', () => {
+      const api = createMockApi();
+      let schemaFn: ((p: any) => void) | undefined;
+      (api.applyWhen as ReturnType<typeof vi.fn>).mockImplementation((_p: any, _c: any, s: any) => { schemaFn = s; });
+      compileSchema([hiddenNode()], api as any)(mockRoot(['f', 'x']));
+
+      schemaFn!('inner_path');
+      expect(api.required).toHaveBeenCalledWith('inner_path', undefined);
+    });
+
+    it('validateWhenHidden: true keeps validators unconditional', () => {
+      const api = createMockApi();
+      compileSchema([hiddenNode({ validateWhenHidden: true })], api as any)(mockRoot(['f', 'x']));
+      expect(api.applyWhen).not.toHaveBeenCalled();
+      expect(api.required).toHaveBeenCalledWith('path_f', undefined);
+    });
+
+    it('a hidden field without validators does not create the wrapper', () => {
+      const api = createMockApi();
+      const node = makeControlNode({
+        key: 'f', path: ['f'],
+        config: { key: 'f', type: 'text', hidden: { expr: 'model.x === 1' } },
+      });
+      compileSchema([node], api as any)(mockRoot(['f', 'x']));
+      expect(api.applyWhen).not.toHaveBeenCalled();
+    });
+
+    it('fields without hidden apply validators directly', () => {
+      const api = createMockApi();
+      const node = makeControlNode({ key: 'f', path: ['f'], validators: [{ kind: 'required' }] });
+      compileSchema([node], api as any)(mockRoot(['f']));
+      expect(api.applyWhen).not.toHaveBeenCalled();
+      expect(api.required).toHaveBeenCalledWith('path_f', undefined);
+    });
+  });
+
   describe('async validators', () => {
     it('calls api.validateAsync with the registered definition', () => {
       const api = createMockApi();

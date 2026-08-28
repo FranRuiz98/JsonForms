@@ -47,6 +47,9 @@ import { JSON_FORMS_RUNTIME } from './form-runtime';
                 }
               </div>
             }
+            @if (containerError(); as err) {
+              <small class="jf-container-error">{{ err }}</small>
+            }
           </fieldset>
         }
         @case ('array') {
@@ -66,6 +69,9 @@ import { JSON_FORMS_RUNTIME } from './form-runtime';
               </div>
             }
             <button type="button" class="jf-add" (click)="addItem()">Add</button>
+            @if (containerError(); as err) {
+              <small class="jf-container-error">{{ err }}</small>
+            }
           </fieldset>
         }
         @default {
@@ -93,6 +99,17 @@ export class FieldRendererComponent {
       return !!(this.field() as any)().hidden();
     } catch {
       return false;
+    }
+  });
+
+  /** First own error of a touched group/array (children report their own). */
+  protected readonly containerError = computed<string | null>(() => {
+    try {
+      const st = (this.field() as any)();
+      if (!st.touched() || !st.errors().length) return null;
+      return st.errors()[0].message ?? 'Invalid value';
+    } catch {
+      return null;
     }
   });
 
@@ -184,9 +201,21 @@ export class FieldRendererComponent {
     const item = this.node().item;
     if (!item) return;
     this.runtime.addArrayItem(this.path(), buildNodeValue(item));
+    this.touchSelf();
   }
 
   protected removeItem(index: number): void {
     this.runtime.removeArrayItem(this.path(), index);
+    this.touchSelf();
+  }
+
+  /** Add/Remove is an interaction with the container: surface its own errors
+   *  (e.g. minItems) without waiting for a submit attempt. */
+  private touchSelf(): void {
+    try {
+      (this.field() as any)().markAsTouched?.();
+    } catch {
+      /* ignore */
+    }
   }
 }

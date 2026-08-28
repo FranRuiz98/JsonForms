@@ -179,8 +179,8 @@ interface FormConfig {
 ```
 
 `dataType` is inferred from `type` when omitted: `checkbox → boolean`, `number → number`,
-everything else `→ string`. Declare it explicitly only when the visual type differs from
-the stored data type.
+`slider → number`, `multiselect → array`, everything else `→ string`. Declare it explicitly
+only when the visual type differs from the stored data type.
 
 ### Field types
 
@@ -189,11 +189,20 @@ The reference adapters register these `type` keys:
 | `type` | Control | Model value |
 | --- | --- | --- |
 | `text` (also `password`, `email`) | Text input | `string` |
+| `textarea` | Multi-line text (`props.rows`) | `string` |
 | `number` | Numeric input | `number` |
 | `select` | Dropdown (`props.options`) | `string` |
+| `multiselect` | Multiple-choice select (`props.options`) | `string[]` |
 | `checkbox` | Boolean checkbox | `boolean` |
+| `radio` | Radio group (`props.options`) | `string` |
+| `date` | Native date picker | `string` (ISO `YYYY-MM-DD`) |
+| `slider` | Range slider (`props.min/max/step`) | `number` |
+| `autocomplete` | Text input with suggestions (`props.options`) | `string` |
 | `group` | Nested object (`fields`) | `{ ... }` |
 | `array` | Repeatable list (`item`) | `[{ ... }]` |
+
+The select-like controls (`select`, `multiselect`, `radio`, `autocomplete`) all support
+[dynamic & async options](#dynamic--async-options).
 
 You can register any other `type` key by mapping it to a component (see
 [Building a component adapter](#building-a-component-adapter)).
@@ -213,6 +222,35 @@ optional `"message"`.
 { "kind": "minLength", "value": 3   }
 { "kind": "maxLength", "value": 50  }
 { "kind": "pattern",   "value": "^[A-Z]{2}[0-9]+$" }
+```
+
+**Containers** — validators also work on `group` and `array` fields. Arrays get two
+dedicated kinds for item counts, and `expr`/`fn` validators receive the container's
+value (the object / the array):
+
+```jsonc
+{ "key": "contacts", "type": "array",
+  "validators": [
+    { "kind": "minItems", "value": 1, "message": "Add at least one contact" },
+    { "kind": "maxItems", "value": 5 }
+  ],
+  "item": { /* ... */ } }
+
+{ "key": "reachability", "type": "group",
+  "validators": [
+    { "kind": "expr", "expr": "!!value.phone || !!value.email", "message": "Provide a phone or an email" }
+  ],
+  "fields": [ /* phone, email */ ] }
+```
+
+The renderer shows a container's own errors under its fieldset (`.jf-container-error`).
+
+**Conditional (`when`)** — any validator can carry a `when` condition (DSL or registered
+function); the rule only applies while the condition is truthy:
+
+```jsonc
+{ "kind": "required", "when": { "expr": "model.country === 'es'" } }
+{ "kind": "pattern", "value": "^ES[0-9]+$", "when": { "fn": "isSpanishVat" } }
 ```
 
 **Cross-field with the DSL** — valid when the expression is truthy:
@@ -245,8 +283,11 @@ model changes. Each accepts a DSL expression or a registered function:
 { "readonly": { "fn": "lockedForGuests" } }
 ```
 
-A hidden field is not rendered. (Note: hidden fields still validate — keep them optional
-if they should not block submission.)
+A hidden field is not rendered **and skips validation** while hidden, so a hidden
+`required` can never block submission. If you need a field to keep validating while
+hidden (e.g. a technical value filled by `computed`), opt back in with
+`"validateWhenHidden": true`. Combine with `"clearOnHide": true` to also reset the
+value when the field disappears.
 
 ### Dynamic & async options
 

@@ -25,10 +25,16 @@ type LogicKey = 'hidden' | 'disabled' | 'readonly' | 'computed';
 type LogicMode = 'off' | 'expr' | 'fn';
 type OptionsMode = 'static' | 'expr' | 'fn' | 'source';
 
-const CONTROL_TYPES = ['text', 'number', 'select', 'checkbox'];
+const CONTROL_TYPES = [
+  'text', 'textarea', 'number', 'select', 'multiselect', 'checkbox', 'radio', 'date', 'slider', 'autocomplete',
+];
+/** Types whose Options section (static/expr/fn/source) applies. */
+const SELECT_LIKE = new Set(['select', 'multiselect', 'radio', 'autocomplete']);
 const DATA_TYPES: DataType[] = ['string', 'number', 'boolean', 'array', 'object'];
 const DEFAULT_DATATYPE: Record<string, DataType> = {
-  text: 'string', number: 'number', select: 'string', checkbox: 'boolean', group: 'object', array: 'array',
+  text: 'string', textarea: 'string', number: 'number', select: 'string', multiselect: 'array',
+  checkbox: 'boolean', radio: 'string', date: 'string', slider: 'number', autocomplete: 'string',
+  group: 'object', array: 'array',
 };
 const VALIDATOR_KINDS = ['required', 'email', 'min', 'max', 'minLength', 'maxLength', 'pattern'];
 const NEEDS_VALUE = new Set(['min', 'max', 'minLength', 'maxLength', 'pattern']);
@@ -218,8 +224,8 @@ const SECTION = 'mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-
               }
             </section>
 
-            <!-- Options (select) -->
-            @if (f.type === 'select') {
+            <!-- Options (select-like controls) -->
+            @if (selectLike(f.type)) {
               <section class="border-t border-slate-100 pt-4">
                 <div [class]="sectionCls">Options</div>
                 <label [class]="labelCls">Source</label>
@@ -316,6 +322,9 @@ export class InspectorComponent {
   }
   isContainer(type: string): boolean {
     return type === 'group' || type === 'array';
+  }
+  selectLike(type: string): boolean {
+    return SELECT_LIKE.has(type);
   }
 
   patch(key: keyof BuilderField, value: string): void {

@@ -18,6 +18,10 @@ import { FormConfig } from 'signal-jsonforms';
  *  12) cascading options: a city select whose options load async from the server
  *      based on the chosen country, clearing itself when the country changes
  *  13) wizard: a linear multi-step form with a conditionally skipped step
+ *  14) field type gallery: the extended control set (textarea, radio, date,
+ *      multiselect, slider, autocomplete)
+ *  15) conditional validation: hidden fields skip validators, "when" conditions,
+ *      and container validation (minItems/maxItems, group-level rules)
  *
  * Levels 1–4, 6, 8 and 11 are 100% self-contained in JSON (do not depend on the registry).
  * Levels 5, 7, 9, 10 and 12 reference helpers/migrations/sources declared in `app.config.ts`
@@ -1262,6 +1266,178 @@ export const EXAMPLES: PlaygroundExample[] = [
               validators: [{ kind: 'required', message: 'You must accept the terms' }],
             },
           ],
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 14 · Field type gallery
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'field-types',
+    level: 14,
+    title: 'Field type gallery',
+    description:
+      'The extended control set both adapters register: textarea, radio, date, multiselect (array value), slider, and autocomplete with suggestions. 100% self-contained JSON.',
+    config: {
+      version: '1',
+      id: 'field-types',
+      layout: { columns: 2 },
+      fields: [
+        {
+          key: 'bio',
+          type: 'textarea',
+          label: 'Short bio',
+          colSpan: 2,
+          props: { placeholder: 'A couple of sentences about you', rows: 4, hint: 'Plain text, no markdown' },
+          validators: [{ kind: 'maxLength', value: 280 }],
+        },
+        {
+          key: 'plan',
+          type: 'radio',
+          label: 'Plan',
+          defaultValue: 'free',
+          props: {
+            options: [
+              { value: 'free', label: 'Free' },
+              { value: 'pro', label: 'Pro' },
+              { value: 'enterprise', label: 'Enterprise' },
+            ],
+          },
+        },
+        {
+          key: 'startDate',
+          type: 'date',
+          label: 'Start date',
+          props: { hint: 'Stored as an ISO string (YYYY-MM-DD)' },
+          validators: [{ kind: 'required' }],
+        },
+        {
+          key: 'interests',
+          type: 'multiselect',
+          label: 'Interests',
+          defaultValue: [],
+          props: {
+            hint: 'The model stores an array of the selected values',
+            options: [
+              { value: 'frontend', label: 'Frontend' },
+              { value: 'backend', label: 'Backend' },
+              { value: 'devops', label: 'DevOps' },
+              { value: 'design', label: 'Design' },
+            ],
+          },
+        },
+        {
+          key: 'experience',
+          type: 'slider',
+          label: 'Years of experience',
+          defaultValue: 3,
+          props: { min: 0, max: 30, step: 1 },
+        },
+        {
+          key: 'country',
+          type: 'autocomplete',
+          label: 'Country',
+          colSpan: 2,
+          props: {
+            placeholder: 'Start typing…',
+            options: [
+              { value: 'es', label: 'Spain' },
+              { value: 'fr', label: 'France' },
+              { value: 'de', label: 'Germany' },
+              { value: 'it', label: 'Italy' },
+              { value: 'pt', label: 'Portugal' },
+            ],
+          },
+        },
+      ],
+    },
+  },
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Level 15 · Conditional validation
+  // ─────────────────────────────────────────────────────────────────────────
+  {
+    id: 'conditional-validation',
+    level: 15,
+    title: 'Conditional validation',
+    description:
+      'Three validation features together: a hidden field skips its validators (the required VAT ID cannot block a personal account), any validator accepts a "when" condition (email required only when subscribing), and containers validate too (minItems/maxItems on the array, a phone-or-email rule on the group). 100% self-contained JSON.',
+    config: {
+      version: '1',
+      id: 'conditional-validation',
+      fields: [
+        {
+          key: 'accountType',
+          type: 'radio',
+          label: 'Account type',
+          defaultValue: 'personal',
+          props: {
+            options: [
+              { value: 'personal', label: 'Personal' },
+              { value: 'business', label: 'Business' },
+            ],
+          },
+        },
+        {
+          // Hidden for personal accounts: its "required" only applies while visible.
+          key: 'vatId',
+          type: 'text',
+          label: 'VAT / Tax ID',
+          hidden: { expr: "model.accountType !== 'business'" },
+          clearOnHide: true,
+          validators: [{ kind: 'required' }, { kind: 'minLength', value: 8 }],
+        },
+        {
+          key: 'subscribe',
+          type: 'checkbox',
+          label: 'Send me the newsletter',
+          defaultValue: false,
+        },
+        {
+          // Visible always; required only while subscribe is checked ("when").
+          key: 'newsletterEmail',
+          type: 'text',
+          label: 'Newsletter email',
+          props: { hint: 'Only required if you subscribe' },
+          validators: [
+            { kind: 'required', when: { expr: 'model.subscribe' }, message: 'Required to subscribe' },
+            { kind: 'email' },
+          ],
+        },
+        {
+          key: 'reachability',
+          type: 'group',
+          label: 'How can we reach you?',
+          validators: [
+            {
+              kind: 'expr',
+              expr: '!!value.phone || !!value.contactEmail',
+              message: 'Provide a phone or an email',
+            },
+          ],
+          fields: [
+            { key: 'phone', type: 'text', label: 'Phone' },
+            { key: 'contactEmail', type: 'text', label: 'Email' },
+          ],
+        },
+        {
+          key: 'contacts',
+          type: 'array',
+          label: 'Emergency contacts (1–3)',
+          validators: [
+            { kind: 'minItems', value: 1, message: 'Add at least one contact' },
+            { kind: 'maxItems', value: 3 },
+          ],
+          item: {
+            key: 'contact',
+            type: 'group',
+            fields: [
+              { key: 'name', type: 'text', label: 'Name', validators: [{ kind: 'required' }] },
+              { key: 'phone', type: 'text', label: 'Phone' },
+            ],
+          },
         },
       ],
     },

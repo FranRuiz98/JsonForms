@@ -8,10 +8,10 @@ export type DynamicExpr = { expr: string } | { fn: string };
 
 /** Synchronous validator declared in JSON. */
 export interface ValidatorConfig {
-  kind: string;          // required | email | min | max | minLength | maxLength | pattern | expr | fn | <custom>
+  kind: string;          // required | email | min | max | minLength | maxLength | pattern | minItems | maxItems | expr | fn | <custom>
   value?: unknown;
   message?: string;
-  when?: DynamicExpr;     // NOTE: in Signal Forms 'when' only applies to required()
+  when?: DynamicExpr;     // the validator only applies while the condition is truthy
   expr?: string;          // kind 'expr' (cross-field/custom DSL)
   fn?: string;            // kind 'fn' (registered validator)
 }
@@ -59,6 +59,7 @@ export interface FieldConfig {
   validators?: ValidatorConfig[];
   asyncValidators?: AsyncValidatorConfig[];
   hidden?: DynamicExpr;
+  validateWhenHidden?: boolean;  // keep validating while hidden (default: hidden skips validation)
   disabled?: DynamicExpr;
   readonly?: DynamicExpr;
   computed?: DynamicExpr;        // derived value (expr/fn); field becomes readonly

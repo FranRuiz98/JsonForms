@@ -7,7 +7,9 @@ import { compileExpression, ExprContext } from '../expression/expression-engine'
 export const resolvePath = (root: any, keys: ReadonlyArray<string>): any =>
   keys.reduce((p, k) => p[k], root);
 
-const STANDARD = new Set(['required', 'email', 'min', 'max', 'minLength', 'maxLength', 'pattern']);
+const STANDARD = new Set([
+  'required', 'email', 'min', 'max', 'minLength', 'maxLength', 'pattern', 'minItems', 'maxItems',
+]);
 
 interface CompileCtx {
   api: SignalFormsApi;
@@ -42,11 +44,26 @@ function applySchema(nodes: FieldNode[], pathNode: any, cc: CompileCtx): void {
 }
 
 function applyNode(node: FieldNode, p: any, cc: CompileCtx): void {
-  // Synchronous validators (standard + cross-field expr/fn).
-  for (const v of node.validators) applyValidator(cc, p, v);
+  const applyValidation = (pp: any): void => {
+    // Synchronous validators (standard + cross-field expr/fn).
+    for (const v of node.validators) applyValidator(cc, pp, v);
+    // Async validators (always via registry).
+    for (const av of node.asyncValidators) applyAsyncValidator(cc, pp, av);
+  };
 
-  // Async validators (always via registry).
-  for (const av of node.asyncValidators) applyAsyncValidator(cc, p, av);
+  // A hidden field skips validation (so a hidden "required" can never block
+  // submission). Opt back into the old behavior with validateWhenHidden: true.
+  const hidden = node.config.hidden;
+  const skipWhenHidden =
+    hidden &&
+    node.config.validateWhenHidden !== true &&
+    (node.validators.length > 0 || node.asyncValidators.length > 0);
+  if (skipWhenHidden) {
+    const isHidden = booleanRule(cc, hidden);
+    cc.api.applyWhen(p, (fc: any) => !isHidden(fc), applyValidation);
+  } else {
+    applyValidation(p);
+  }
 
   // Conditional rules (DSL or registered function).
   applyConditional(cc, p, node.config.hidden, 'hidden');
@@ -88,6 +105,18 @@ function fillMessage(result: ValidationResult, cc: CompileCtx): ValidationResult
 // --- Synchronous validation ---
 
 function applyValidator(cc: CompileCtx, p: any, v: ValidatorConfig): void {
+  // Conditional validator: any kind can carry a `when` (DSL or registered fn);
+  // the validator only applies while the condition is truthy.
+  if (v.when) {
+    const condition = booleanRule(cc, v.when);
+    const { when: _when, ...unconditional } = v;
+    cc.api.applyWhen(
+      p,
+      (fc: any) => !!condition(fc),
+      (pp: any) => applyValidator(cc, pp, unconditional),
+    );
+    return;
+  }
   if (STANDARD.has(v.kind)) {
     applyStandardValidator(cc, p, v);
     return;
@@ -131,6 +160,18 @@ function applyStandardValidator(cc: CompileCtx, path: any, v: ValidatorConfig): 
       break;
     case 'pattern':
       cc.api.pattern(path, toRegExp(v.value), opts);
+      break;
+    // Array containers: item-count limits reuse Signal Forms' length validators
+    // (they accept any value with `length`), with an item-flavored default message.
+    case 'minItems':
+      cc.api.minLength(path, Number(v.value), {
+        message: message ?? interpolate('At least {value} item(s)', v),
+      });
+      break;
+    case 'maxItems':
+      cc.api.maxLength(path, Number(v.value), {
+        message: message ?? interpolate('At most {value} item(s)', v),
+      });
       break;
   }
 }

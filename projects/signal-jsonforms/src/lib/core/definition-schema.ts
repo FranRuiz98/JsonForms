@@ -10,6 +10,9 @@ const dataType = z.enum(['string', 'number', 'boolean', 'array', 'object']);
 
 const dynamicExpr = z.union([z.object({ expr: z.string() }), z.object({ fn: z.string() })]);
 
+/** Kinds whose "value" carries the rule parameter and is therefore mandatory. */
+const VALUE_KINDS = new Set(['min', 'max', 'minLength', 'maxLength', 'pattern', 'minItems', 'maxItems']);
+
 const validatorConfig = z.object({
   kind: z.string().min(1),
   value: z.unknown().optional(),
@@ -54,6 +57,7 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
       validators: z.array(validatorConfig).optional(),
       asyncValidators: z.array(asyncValidatorConfig).optional(),
       hidden: dynamicExpr.optional(),
+      validateWhenHidden: z.boolean().optional(),
       disabled: dynamicExpr.optional(),
       readonly: dynamicExpr.optional(),
       computed: dynamicExpr.optional(),
@@ -96,6 +100,13 @@ const fieldConfig: z.ZodType<FieldConfig> = z.lazy(() =>
             code: 'custom',
             path: ['validators', i, 'fn'],
             message: 'a "fn" validator requires "fn".',
+          });
+        }
+        if (VALUE_KINDS.has(v.kind) && v.value == null) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['validators', i, 'value'],
+            message: `a "${v.kind}" validator requires "value".`,
           });
         }
       });

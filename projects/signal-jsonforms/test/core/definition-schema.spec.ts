@@ -174,6 +174,40 @@ describe('validateConfig', () => {
       ).toThrow(/fn/);
     });
 
+    it('throws if a value-carrying kind has no value', () => {
+      expect(() =>
+        validateConfig({ fields: [{ key: 'x', type: 'text', validators: [{ kind: 'minLength' }] }] }),
+      ).toThrow(/value/);
+      expect(() =>
+        validateConfig({
+          fields: [
+            { key: 'tags', type: 'array', validators: [{ kind: 'minItems' }],
+              item: { key: 'item', type: 'text' } },
+          ],
+        }),
+      ).toThrow(/value/);
+    });
+
+    it('accepts minItems/maxItems with value, when, and validateWhenHidden', () => {
+      const config = validateConfig({
+        fields: [
+          {
+            key: 'tags', type: 'array',
+            validators: [{ kind: 'minItems', value: 1 }, { kind: 'maxItems', value: 5 }],
+            item: { key: 'item', type: 'text' },
+          },
+          {
+            key: 'vat', type: 'text',
+            hidden: { expr: "model.kind !== 'business'" },
+            validateWhenHidden: true,
+            validators: [{ kind: 'required', when: { expr: "model.kind === 'business'" } }],
+          },
+        ],
+      });
+      expect(config.fields?.[0].validators).toHaveLength(2);
+      expect(config.fields?.[1].validateWhenHidden).toBe(true);
+    });
+
     it('produces a readable error message with prefix', () => {
       try {
         validateConfig({ fields: [] });

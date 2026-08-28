@@ -1,5 +1,5 @@
 import { NgComponentOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Type, computed, inject, input } from '@angular/core';
 import { FieldNode, FieldTree, JSON_FORMS_CONFIG } from 'signal-jsonforms';
 
 /**
@@ -21,8 +21,8 @@ import { FieldNode, FieldTree, JSON_FORMS_CONFIG } from 'signal-jsonforms';
       @if (description()) {
         <p class="jfh-desc">{{ description() }}</p>
       }
-      @if (control(); as cmp) {
-        <ng-container [ngComponentOutlet]="cmp" [ngComponentOutletInputs]="controlInputs()" />
+      @if (innerComponent(); as cmp) {
+        <ng-container [ngComponentOutlet]="cmp" [ngComponentOutletInputs]="innerComponentInputs()" />
       } @else {
         <div class="jfh-unknown">Unregistered field type: "{{ node().config.type }}"</div>
       }
@@ -51,6 +51,10 @@ export class HtmlFieldWrapperComponent {
 
   readonly node = input.required<FieldNode>();
   readonly field = input.required<FieldTree<unknown>>();
+  /** Next component to render inside this wrapper (another wrapper or the control). */
+  readonly inner = input<Type<unknown> | null>(null);
+  /** Inputs for the inner component. */
+  readonly innerInputs = input<Record<string, unknown>>({});
 
   private readonly state = computed(() => {
     try {
@@ -60,13 +64,16 @@ export class HtmlFieldWrapperComponent {
     }
   });
 
-  protected readonly control = computed(
+  /** Fallback control when used standalone (no inner threaded by the renderer). */
+  private readonly control = computed(
     () => this.registries.fieldTypes?.[this.node().config.type] ?? null,
   );
-  protected readonly controlInputs = computed(() => ({
-    field: this.field(),
-    config: this.node().config,
-  }));
+
+  protected readonly innerComponent = computed(() => this.inner() ?? this.control());
+
+  protected readonly innerComponentInputs = computed(() =>
+    this.inner() ? this.innerInputs() : { field: this.field(), config: this.node().config },
+  );
 
   protected readonly pending = computed(() => {
     const s = this.state();

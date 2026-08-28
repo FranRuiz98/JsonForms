@@ -7,7 +7,7 @@
  * flat (`fields`) or a wizard (`steps`); the "top-level container" for adds and
  * drops is the active step in wizard mode, or the root in flat mode.
  */
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import jsep from 'jsep';
 import {
@@ -42,14 +42,51 @@ export const PALETTE_CONTAINER = 'palette';
 
 const HISTORY_LIMIT = 50;
 
+const AUTOSAVE_KEY = 'signal-jsonforms.web-builder.document';
+const AUTOSAVE_DEBOUNCE_MS = 400;
+
+/** Restore the last autosaved document, or null when absent/corrupt. The raw
+ *  BuilderDocument (with `_id`s) is stored, not the serialized FormConfig, so
+ *  work-in-progress that would not yet pass zod validation survives a reload. */
+function loadAutosaved(): BuilderDocument | null {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return null;
+    const doc = JSON.parse(raw) as BuilderDocument;
+    if (!doc || typeof doc !== 'object') return null;
+    if (!Array.isArray(doc.fields) && !Array.isArray(doc.steps)) return null;
+    return doc;
+  } catch {
+    return null;
+  }
+}
+
+function autosave(doc: BuilderDocument): void {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(doc));
+  } catch {
+    // Storage full or unavailable — autosave is best-effort.
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class BuilderStore {
   private readonly registry = inject(JSON_FORMS_CONFIG);
 
-  readonly document = signal<BuilderDocument>(emptyDocument());
+  readonly document = signal<BuilderDocument>(loadAutosaved() ?? emptyDocument());
   readonly selectedId = signal<NodeId | null>(null);
   /** Active wizard step id (null in flat mode). */
-  readonly activeStepId = signal<string | null>(null);
+  readonly activeStepId = signal<string | null>(this.document().steps?.[0]?._id ?? null);
+
+  private autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    effect(() => {
+      const doc = this.document();
+      if (this.autosaveTimer !== null) clearTimeout(this.autosaveTimer);
+      this.autosaveTimer = setTimeout(() => autosave(doc), AUTOSAVE_DEBOUNCE_MS);
+    });
+  }
 
   private readonly past: BuilderDocument[] = [];
   private readonly future: BuilderDocument[] = [];

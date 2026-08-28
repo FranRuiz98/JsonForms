@@ -92,9 +92,12 @@ function base(
 function inferDataType(field: FieldConfig): DataType {
   switch (field.type) {
     case 'number':
+    case 'slider':
       return 'number';
     case 'checkbox':
       return 'boolean';
+    case 'multiselect':
+      return 'array';
     default:
       return 'string';
   }

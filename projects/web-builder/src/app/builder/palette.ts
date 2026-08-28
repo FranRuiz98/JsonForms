@@ -54,6 +54,79 @@ export const PALETTE: PaletteItem[] = [
     make: () => ({ type: 'checkbox', dataType: 'boolean', label: 'Checkbox', defaultValue: false }),
   },
   {
+    type: 'textarea',
+    title: 'Textarea',
+    category: 'Basic controls',
+    kind: 'control',
+    make: () => ({ type: 'textarea', dataType: 'string', label: 'Textarea', props: { rows: 3 } }),
+  },
+  {
+    type: 'radio',
+    title: 'Radio',
+    category: 'Basic controls',
+    kind: 'control',
+    make: () => ({
+      type: 'radio',
+      dataType: 'string',
+      label: 'Radio',
+      options: [
+        { value: 'a', label: 'Option A' },
+        { value: 'b', label: 'Option B' },
+      ],
+    }),
+  },
+  {
+    type: 'multiselect',
+    title: 'Multi select',
+    category: 'Basic controls',
+    kind: 'control',
+    make: () => ({
+      type: 'multiselect',
+      dataType: 'array',
+      label: 'Multi select',
+      defaultValue: [],
+      options: [
+        { value: 'a', label: 'Option A' },
+        { value: 'b', label: 'Option B' },
+      ],
+    }),
+  },
+  {
+    type: 'date',
+    title: 'Date',
+    category: 'Basic controls',
+    kind: 'control',
+    make: () => ({ type: 'date', dataType: 'string', label: 'Date' }),
+  },
+  {
+    type: 'slider',
+    title: 'Slider',
+    category: 'Basic controls',
+    kind: 'control',
+    make: () => ({
+      type: 'slider',
+      dataType: 'number',
+      label: 'Slider',
+      defaultValue: 50,
+      props: { min: 0, max: 100, step: 1 },
+    }),
+  },
+  {
+    type: 'autocomplete',
+    title: 'Autocomplete',
+    category: 'Basic controls',
+    kind: 'control',
+    make: () => ({
+      type: 'autocomplete',
+      dataType: 'string',
+      label: 'Autocomplete',
+      options: [
+        { value: 'a', label: 'Option A' },
+        { value: 'b', label: 'Option B' },
+      ],
+    }),
+  },
+  {
     type: 'group',
     title: 'Group',
     category: 'Containers',
@@ -90,9 +163,15 @@ export interface FieldMeta {
 
 export const FIELD_META: Record<string, FieldMeta> = {
   text: { icon: 'text', badge: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400', soft: 'bg-slate-100 text-slate-500' },
+  textarea: { icon: 'textarea', badge: 'bg-slate-100 text-slate-600', dot: 'bg-slate-400', soft: 'bg-slate-100 text-slate-500' },
   number: { icon: 'number', badge: 'bg-sky-50 text-sky-700', dot: 'bg-sky-400', soft: 'bg-sky-50 text-sky-600' },
+  slider: { icon: 'slider', badge: 'bg-sky-50 text-sky-700', dot: 'bg-sky-400', soft: 'bg-sky-50 text-sky-600' },
   select: { icon: 'select', badge: 'bg-teal-50 text-teal-700', dot: 'bg-teal-400', soft: 'bg-teal-50 text-teal-600' },
+  multiselect: { icon: 'multiselect', badge: 'bg-teal-50 text-teal-700', dot: 'bg-teal-400', soft: 'bg-teal-50 text-teal-600' },
+  autocomplete: { icon: 'autocomplete', badge: 'bg-teal-50 text-teal-700', dot: 'bg-teal-400', soft: 'bg-teal-50 text-teal-600' },
   checkbox: { icon: 'checkbox', badge: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-400', soft: 'bg-emerald-50 text-emerald-600' },
+  radio: { icon: 'radio', badge: 'bg-emerald-50 text-emerald-700', dot: 'bg-emerald-400', soft: 'bg-emerald-50 text-emerald-600' },
+  date: { icon: 'date', badge: 'bg-amber-50 text-amber-700', dot: 'bg-amber-400', soft: 'bg-amber-50 text-amber-600' },
   group: { icon: 'group', badge: 'bg-indigo-50 text-indigo-700', dot: 'bg-indigo-500', soft: 'bg-indigo-50 text-indigo-600' },
   array: { icon: 'array', badge: 'bg-violet-50 text-violet-700', dot: 'bg-violet-500', soft: 'bg-violet-50 text-violet-600' },
 };
